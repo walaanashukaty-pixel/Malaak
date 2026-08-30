@@ -88,7 +88,7 @@ class _HypothesesScreenState extends State<HypothesesScreen> {
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const ListView(children: [SizedBox(height: 260), Center(child: CircularProgressIndicator())]);
+              return ListView(children: const [SizedBox(height: 260), Center(child: CircularProgressIndicator())]);
             }
             if (snapshot.hasError) {
               return ListView(
