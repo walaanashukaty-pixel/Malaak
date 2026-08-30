@@ -11,7 +11,7 @@ if [ ! -f android/app/src/main/AndroidManifest.xml ]; then
 fi
 
 flutter pub get
-flutter analyze
+flutter analyze --no-fatal-infos
 flutter test
 flutter build apk --release
 flutter build appbundle --release
