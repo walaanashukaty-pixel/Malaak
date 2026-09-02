@@ -17,6 +17,14 @@ try {
     $manifest = 'android/app/src/main/AndroidManifest.xml'
     $content = Get-Content $manifest -Raw
     $content = $content -replace 'android:label="malaak_balance"', 'android:label="ملاك"'
+    if (-not $content.Contains('android.permission.INTERNET')) {
+        $content = [regex]::Replace(
+            $content,
+            '(<manifest[^>]*>)',
+            '$1' + [Environment]::NewLine + '    <uses-permission android:name="android.permission.INTERNET" />',
+            1
+        )
+    }
     Set-Content -Path $manifest -Value $content -Encoding UTF8
 
     $packageId = 'com.malaak.malaak_balance'
@@ -26,6 +34,9 @@ try {
     }
     if (-not ((Get-Content $manifest -Raw).Contains('android:label="ملاك"'))) {
         throw 'Android app label patch failed.'
+    }
+    if (-not ((Get-Content $manifest -Raw).Contains('android.permission.INTERNET'))) {
+        throw 'Android release INTERNET permission patch failed.'
     }
 
     Write-Host ''

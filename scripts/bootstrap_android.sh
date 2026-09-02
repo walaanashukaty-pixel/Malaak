@@ -28,6 +28,11 @@ import sys
 p = Path(sys.argv[1])
 s = p.read_text(encoding='utf-8')
 s = s.replace('android:label="malaak_balance"', 'android:label="ملاك"')
+if 'android.permission.INTERNET' not in s:
+    end = s.find('>')
+    if end < 0:
+        raise SystemExit('Could not locate opening <manifest> tag')
+    s = s[:end + 1] + '\n    <uses-permission android:name="android.permission.INTERNET" />' + s[end + 1:]
 p.write_text(s, encoding='utf-8')
 PY
 
@@ -39,6 +44,10 @@ fi
 if ! grep -q 'android:label="ملاك"' "$MANIFEST"; then
   echo 'Android app label patch failed.' >&2
   exit 3
+fi
+if ! grep -q 'android.permission.INTERNET' "$MANIFEST"; then
+  echo 'Android release INTERNET permission patch failed.' >&2
+  exit 4
 fi
 
 printf '\nAndroid scaffold ready: %s\n' "$PACKAGE_ID"

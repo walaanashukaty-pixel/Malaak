@@ -10,6 +10,12 @@ if (-not (Test-Path 'android/app/src/main/AndroidManifest.xml')) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+$manifest = 'android/app/src/main/AndroidManifest.xml'
+if (-not ((Get-Content $manifest -Raw).Contains('android.permission.INTERNET'))) {
+    Write-Error 'Release AndroidManifest.xml is missing android.permission.INTERNET.'
+    exit 2
+}
+
 flutter pub get
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 flutter analyze

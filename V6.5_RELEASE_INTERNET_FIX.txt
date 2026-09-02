@@ -1,0 +1,17 @@
+Malaak Android V6.5 - Release Internet / Supabase Auth Fix
+
+Root cause found from production evidence:
+- The GitHub-built release APK pointed to the correct Supabase project: puwomvazbzvjmzzmogoj.
+- Supabase Auth logs showed no login/signup requests coming from the Android app.
+- The generated Android release manifest did not include android.permission.INTERNET.
+- Flutter's debug scaffold can have internet permission while the release main manifest does not.
+
+Fix:
+- bootstrap_android.sh now injects android.permission.INTERNET into android/app/src/main/AndroidManifest.xml.
+- bootstrap_android.ps1 does the same on Windows.
+- Release build scripts fail immediately if the permission is missing.
+- Android build pipeline regression test now requires the release Internet permission.
+- Existing V6.4 Login/Register and correct Supabase binding remain unchanged.
+
+Supabase project:
+puwomvazbzvjmzzmogoj

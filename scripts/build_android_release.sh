@@ -10,6 +10,12 @@ if [ ! -f android/app/src/main/AndroidManifest.xml ]; then
   bash scripts/bootstrap_android.sh
 fi
 
+MANIFEST='android/app/src/main/AndroidManifest.xml'
+if ! grep -q 'android.permission.INTERNET' "$MANIFEST"; then
+  echo 'Release AndroidManifest.xml is missing android.permission.INTERNET.' >&2
+  exit 2
+fi
+
 flutter pub get
 flutter analyze --no-fatal-infos
 flutter test

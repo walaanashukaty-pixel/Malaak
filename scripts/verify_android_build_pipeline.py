@@ -20,11 +20,13 @@ for name, text in [('sh', sh), ('ps1', ps)]:
         if marker not in text: fail(f'{name} bootstrap missing {marker}')
     if 'com.malaak.malaak_balance' not in text:
         fail(f'{name} bootstrap must verify package id com.malaak.malaak_balance')
+    if 'android.permission.INTERNET' not in text:
+        fail(f'{name} bootstrap must add INTERNET permission to the release manifest')
 
 release_sh = read(Path('scripts/build_android_release.sh'))
 release_ps = read(Path('scripts/build_android_release.ps1'))
 for name, text in [('release sh', release_sh), ('release ps1', release_ps)]:
-    for marker in ['flutter pub get', 'flutter analyze', 'flutter test', 'flutter build apk --release', 'flutter build appbundle --release']:
+    for marker in ['flutter pub get', 'flutter analyze', 'flutter test', 'flutter build apk --release', 'flutter build appbundle --release', 'android.permission.INTERNET']:
         if marker not in text: fail(f'{name} missing {marker}')
 
 workflow = read(Path('.github/workflows/android-release.yml'))
