@@ -1,11 +1,11 @@
 # Build Status — Malaak Flutter Android V6.1 Source
 
 Date: 2026-08-29
-Version: `0.6.6+10`
+Version: `0.6.7+11`
 
 ## Android Release Readiness
 
-The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.6+10` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
+The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.7+11` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
 
 Verified source changes:
 
@@ -54,6 +54,16 @@ Expected outputs after a successful build:
 - `build/app/outputs/bundle/release/app-release.aab`
 
 For Google Play production release, configure protected upload signing / Play App Signing separately. No keystore password, `OPENAI_API_KEY`, or Supabase service-role key belongs in the Android client or repository.
+
+
+## V6.7 conversational training
+
+- Assessment is chat-style with explicit previous/next navigation; answer taps do not auto-advance.
+- All four educational models are displayed after assessment; Malaak recommends, the user chooses.
+- `advanced` is no longer a no-problem terminal result; masculine-intelligence and feminine-intelligence have working routes.
+- Lessons are multi-step coaching sessions with scenario retry, reflection, real-life mission, and later follow-up.
+- Progress distinguishes training sessions, pending missions, and real-life applications.
+- Existing `malaak_learning_states` persistence is reused; Auth/Supabase project binding is unchanged.
 
 ## V6.6 feminine-intelligence trial
 

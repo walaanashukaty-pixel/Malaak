@@ -1,31 +1,32 @@
-MALAAK V6.6 - START HERE
+MALAAK V6.7 - START HERE
 
 WHAT IS NEW
 ===========
-- New interactive "بوصلة الذكاء الأنثوي" methodology.
-- 12-scenario Start Map routes the user by current behavior instead of forcing sequential levels.
-- Route 1: from self-abandonment / people pleasing toward feminine intelligence.
-- Route 2: from masculine rigidity / control / urgency toward feminine intelligence.
-- Advanced users are not sent backward; they get a structured Situation Lab.
-- Route progress, lesson completion, notes and assessment answers persist locally and to Supabase.
-- Existing Malaak visual identity and other journey sections are preserved.
+- "بوصلة الذكاء الأنثوي" assessment now feels like a conversation with Malaak.
+- Choosing an answer does NOT move automatically. Use السابق / التالي and edit earlier answers anytime before the result.
+- After assessment, all four models are shown. Malaak recommends one route, but the user chooses.
+- No mixed answer set ends with "you do not need anything".
+- Four working routes: feminine naivety, masculine rigidity, masculine intelligence, feminine intelligence deepening.
+- Training is no longer one question + "completed". Each session has discovery, reflection, a scenario, feedback/retry, a real-life mission and follow-up.
+- Progress measures training sessions and real-life applications separately.
+- Other Malaak sections and the premium visual identity are preserved.
 
 SUPABASE
 ========
 Target project: walaanashukaty-pixel's Project
 Project ref: puwomvazbzvjmzzmogoj
-Migration malaak_learning_states_v6 has already been applied to the correct project.
+Existing malaak_learning_states persistence is reused. No new DB table is required for V6.7.
 
 SAFE GITHUB UPLOAD
 ==================
 1. Extract this ZIP into a NEW folder.
 2. Double-click UPLOAD_TO_GITHUB.bat.
-3. If GitHub opens a browser sign-in, finish the sign-in.
-4. Wait for the SUCCESS message.
+3. Complete GitHub browser sign-in if requested.
+4. Wait for SUCCESS.
 5. GitHub Actions opens automatically. Wait for Android Release Build to become green.
-6. Download the artifact named malaak-android-apk and install app-release.apk.
+6. Download artifact malaak-android-apk and install app-release.apk.
 
 IMPORTANT
 =========
 Do NOT run git init and do NOT use git push --force.
-The uploader clones the latest GitHub main branch first, overlays V6.6, then commits and pushes safely.
+The uploader clones the latest GitHub main branch first, overlays V6.7, then commits and pushes safely.

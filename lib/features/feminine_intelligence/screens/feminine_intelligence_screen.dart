@@ -8,6 +8,7 @@ import '../../../widgets/premium_card.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/soft_icon.dart';
 import '../data/fi_catalog.dart';
+import 'fi_assessment_result_screen.dart';
 import 'fi_assessment_screen.dart';
 import 'fi_route_screen.dart';
 import 'fi_situation_lab_screen.dart';
@@ -40,7 +41,7 @@ class FeminineIntelligenceScreen extends StatelessWidget {
                 const Text('الذكاء الأنثوي هو الوجهة ✨', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.plum)),
                 const SizedBox(height: 7),
                 const Text(
-                  'ما رح نمشيك بمراحل ما بتشبهك. أول شي منعرف نقطة بدايتك من مواقف حقيقية، وبعدها ملاك بيفتحلك المسار الأقرب لإلك.',
+                  'ملاك بتتعرف على طريقتك من محادثة قصيرة، بترشحلك نقطة بداية، وإنتِ بتختاري المسار. وبعدها التدريب بيصير جلسات ومهام بالحياة، مو مجرد قراءة وتكبيس.',
                   style: TextStyle(fontSize: 12.5, height: 1.8, color: AppColors.softText),
                 ),
                 const SizedBox(height: 16),
@@ -53,7 +54,7 @@ class FeminineIntelligenceScreen extends StatelessWidget {
                     border: Border.all(color: AppColors.border),
                   ),
                   child: const Text(
-                    'هذه خريطة تعليمية وليست تشخيصًا. النتيجة بتقول وين يبدأ تدريبك حاليًا، مو مين أنتِ كشخص.',
+                    'النماذج الأربعة إطار تعليمي، مو تشخيص. ممكن يختلف أسلوبك حسب العلاقة والموقف، وترشيح ملاك مجرد نقطة بداية قابلة للتغيير.',
                     style: TextStyle(fontSize: 11.5, height: 1.65, fontWeight: FontWeight.w700, color: AppColors.plum),
                   ),
                 ),
@@ -63,24 +64,24 @@ class FeminineIntelligenceScreen extends StatelessWidget {
           const SizedBox(height: 22),
           if (!state.assessmentCompleted) ...[
             const SectionHeader(
-              title: 'خريطة البداية',
-              subtitle: '12 موقف قصير. اختاري الأقرب لتصرفك الحقيقي، مو الجواب المثالي.',
+              title: 'جلسة البداية مع ملاك',
+              subtitle: 'محادثة قصيرة من مواقف حقيقية. فيكي ترجعي وتعدلي أي جواب قبل النتيجة.',
             ),
             const SizedBox(height: 10),
             PremiumCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('نقطة بدايتك رح تحدد الرحلة', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.plum)),
+                  const Text('خلينا نتعرف عليك أولًا', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.plum)),
                   const SizedBox(height: 8),
                   const Text(
-                    'ممكن يطلع تركيزك على إرضاء الآخرين، أو السيطرة والاستعجال، أو تكون عندك قاعدة متقدمة أصلًا. ما في نتيجة سيئة.',
+                    'ما في جواب صح أو غلط. ملاك رح تسمع إجاباتك، تعكسلك اللي لاحظته، وبالنهاية تعرض النماذج الأربعة وتقدم ترشيحها فقط.',
                     style: TextStyle(fontSize: 12, height: 1.7, color: AppColors.softText),
                   ),
                   const SizedBox(height: 16),
                   _PrimaryButton(
-                    label: state.answers.isEmpty ? 'ابدئي خريطة البداية' : 'كمّلي خريطة البداية',
-                    icon: Icons.route_rounded,
+                    label: state.answers.isEmpty ? 'ابدئي الجلسة' : 'كمّلي الجلسة',
+                    icon: Icons.chat_bubble_outline_rounded,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const FiAssessmentScreen()),
                     ),
@@ -89,33 +90,56 @@ class FeminineIntelligenceScreen extends StatelessWidget {
               ),
             ),
           ] else ...[
-            const SectionHeader(title: 'نقطة بدايتك الحالية'),
+            const SectionHeader(title: 'خريطتك الحالية'),
             const SizedBox(height: 10),
             _ResultCard(state: state),
-            const SizedBox(height: 22),
-            if (state.routeId != 'advanced') ...[
+            const SizedBox(height: 12),
+            if (state.routeId == null)
+              _PrimaryButton(
+                label: 'شوفي النماذج الأربعة واختاري مسارك',
+                icon: Icons.route_rounded,
+                onTap: () {
+                  final recommended = state.recommendedRouteId ?? FiCatalog.feminineIntelligenceRoute.id;
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => FiAssessmentResultScreen(recommendedRouteId: recommended),
+                  ));
+                },
+              )
+            else ...[
               const SectionHeader(
-                title: 'رحلتك الشخصية',
-                subtitle: 'المسار ثابت وواضح، والتقدم بيتحفظ مع حسابك.',
+                title: 'رحلتك الحالية',
+                subtitle: 'التقدم بيتحسب من التدريب والتطبيق بالحياة، مو من فتح الدرس.',
               ),
               const SizedBox(height: 10),
               _RouteProgressCard(state: state),
-            ] else ...[
+              const SizedBox(height: 18),
               const SectionHeader(
                 title: 'مختبر المواقف',
-                subtitle: 'عندك أساس جيد؛ بدل ما نرجعك لورا، مندرّب الحكمة على موقف حقيقي.',
+                subtitle: 'استخدمي المهارات على موقف حقيقي بأي وقت.',
               ),
               const SizedBox(height: 10),
-              _LabCard(state: state),
+              const _LabCard(),
+              const SizedBox(height: 14),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    final recommended = state.recommendedRouteId ?? state.routeId!;
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => FiAssessmentResultScreen(recommendedRouteId: recommended),
+                    ));
+                  },
+                  icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                  label: const Text('تغيير المسار'),
+                ),
+              ),
             ],
-            const SizedBox(height: 18),
             Center(
               child: TextButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const FiAssessmentScreen(restart: true)),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('إعادة خريطة البداية'),
+                label: const Text('إعادة جلسة البداية'),
               ),
             ),
           ],
@@ -132,31 +156,25 @@ class _ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.routeId == 'advanced') {
-      return PremiumCard(
-        color: AppColors.sage.withOpacity(0.13),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('عندك قاعدة قوية بالفعل 🌿', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.plum)),
-            SizedBox(height: 8),
-            Text(
-              'إجاباتك ما بتظهر حاجة واضحة لمسار السذاجة أو التعصب. لذلك ما رح نخترع مشكلة. بنبدأ مباشرة بتدريب الوقت، المسافة، المشاعر والنية على مواقف حقيقية.',
-              style: TextStyle(fontSize: 12, height: 1.75, color: AppColors.softText),
-            ),
-          ],
-        ),
-      );
-    }
-    final route = FiCatalog.routeById(state.routeId ?? FiCatalog.feminineNaivetyRoute.id);
+    final recommendedId = state.recommendedRouteId ?? state.routeId ?? FiCatalog.feminineIntelligenceRoute.id;
+    final recommended = FiCatalog.modelByRouteId(recommendedId);
+    final chosen = state.routeId == null ? null : FiCatalog.modelByRouteId(state.routeId!);
     return PremiumCard(
       color: AppColors.gold.withOpacity(0.08),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(route.resultTitle, style: const TextStyle(fontSize: 15.5, height: 1.45, fontWeight: FontWeight.w900, color: AppColors.plum)),
-          const SizedBox(height: 9),
-          Text(route.resultBody, style: const TextStyle(fontSize: 12, height: 1.75, color: AppColors.softText)),
+          const Text('⭐ ترشيح ملاك كبداية', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.gold)),
+          const SizedBox(height: 5),
+          Text(recommended.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.plum)),
+          const SizedBox(height: 7),
+          Text(recommended.description, style: const TextStyle(fontSize: 11.5, height: 1.7, color: AppColors.softText)),
+          if (chosen != null) ...[
+            const SizedBox(height: 12),
+            Container(height: 1, color: AppColors.border),
+            const SizedBox(height: 11),
+            Text('المسار اللي اخترتيه: ${chosen.title}', style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: AppColors.plum)),
+          ],
         ],
       ),
     );
@@ -171,8 +189,10 @@ class _RouteProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final route = FiCatalog.routeById(state.routeId ?? FiCatalog.feminineNaivetyRoute.id);
-    final completed = state.completedLessonIds.where((id) => route.lessons.any((lesson) => lesson.id == id)).length;
-    final progress = route.lessons.isEmpty ? 0.0 : completed / route.lessons.length;
+    final progressEntries = route.lessons.map((lesson) => state.lessonProgress[lesson.id]).whereType<LearningLessonProgress>().toList();
+    final practiced = progressEntries.where((progress) => progress.hasStarted).length;
+    final applied = progressEntries.fold<int>(0, (total, progress) => total + progress.realLifeApplications);
+    final progress = route.lessons.isEmpty ? 0.0 : practiced / route.lessons.length;
     return PremiumCard(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FiRouteScreen(routeId: route.id))),
       child: Column(
@@ -196,8 +216,35 @@ class _RouteProgressCard extends StatelessWidget {
               color: AppColors.lilac,
             ),
           ),
-          const SizedBox(height: 9),
-          Text('$completed من ${route.lessons.length} تدريبات مكتملة', style: const TextStyle(fontSize: 10.5, color: AppColors.mutedText, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 11),
+          Row(
+            children: [
+              Expanded(child: _MiniMetric(label: 'جلسات تدريب', value: '$practiced/${route.lessons.length}')),
+              const SizedBox(width: 8),
+              Expanded(child: _MiniMetric(label: 'تطبيقات حقيقية', value: '$applied')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniMetric extends StatelessWidget {
+  const _MiniMetric({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(color: AppColors.muted.withOpacity(0.65), borderRadius: BorderRadius.circular(14)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.plum)),
+          Text(label, style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.mutedText)),
         ],
       ),
     );
@@ -205,9 +252,7 @@ class _RouteProgressCard extends StatelessWidget {
 }
 
 class _LabCard extends StatelessWidget {
-  const _LabCard({required this.state});
-
-  final LearningJourneyState state;
+  const _LabCard();
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +268,7 @@ class _LabCard extends StatelessWidget {
               children: [
                 Text('عندي موقف الآن', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900, color: AppColors.plum)),
                 SizedBox(height: 4),
-                Text('6 خطوات منظمة تساعدك تفكري قبل ما تتصرفي.', style: TextStyle(fontSize: 11.5, height: 1.6, color: AppColors.softText)),
+                Text('مشي الموقف مع ملاك خطوة خطوة بدل ما تاخدي جواب جاهز.', style: TextStyle(fontSize: 11.5, height: 1.6, color: AppColors.softText)),
               ],
             ),
           ),

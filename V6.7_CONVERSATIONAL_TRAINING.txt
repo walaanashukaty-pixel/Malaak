@@ -1,0 +1,11 @@
+Malaak Android V6.7 - Conversational Feminine Intelligence Training
+Version: 0.6.7+11
+
+- Chat-style Start Map with manual previous/next navigation.
+- Four model result screen; Malaak recommends, user chooses.
+- Working routes for feminine naivety, masculine rigidity, masculine intelligence and feminine intelligence deepening.
+- Multi-step training sessions with scenario retry and personal reflection.
+- Real-life mission must be followed up; no instant one-click mastery.
+- Route progress shows training sessions, real-life applications and pending follow-ups.
+- Backward compatibility: legacy V6.6 `advanced` route maps to feminine-intelligence deepening.
+- Supabase/Auth binding and all other Malaak domains remain unchanged.

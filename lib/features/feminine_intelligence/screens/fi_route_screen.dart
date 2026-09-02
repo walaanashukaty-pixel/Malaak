@@ -20,8 +20,11 @@ class FiRouteScreen extends StatelessWidget {
     final route = FiCatalog.routeById(routeId);
     final saved = AppScope.of(context).state.learningJourneys[FiCatalog.domainId] ??
         const LearningJourneyState(domainId: FiCatalog.domainId);
-    final completed = saved.completedLessonIds.where((id) => route.lessons.any((lesson) => lesson.id == id)).length;
-    final progress = completed / route.lessons.length;
+    final progressList = route.lessons.map((lesson) => saved.lessonProgress[lesson.id]).whereType<LearningLessonProgress>().toList();
+    final practiced = progressList.where((progress) => progress.hasStarted).length;
+    final applications = progressList.fold<int>(0, (total, progress) => total + progress.realLifeApplications);
+    final missionPending = progressList.where((progress) => progress.missionPending).length;
+    final progress = route.lessons.isEmpty ? 0.0 : practiced / route.lessons.length;
 
     return Scaffold(
       appBar: AppBar(title: const Text('رحلتي', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
@@ -43,8 +46,16 @@ class FiRouteScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   child: LinearProgressIndicator(value: progress, minHeight: 8, backgroundColor: AppColors.muted, color: AppColors.lilac),
                 ),
-                const SizedBox(height: 8),
-                Text('$completed من ${route.lessons.length}', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.mutedText)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _Metric(value: '$practiced', label: 'جلسات تدريب')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _Metric(value: '$applications', label: 'تطبيقات حقيقية')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _Metric(value: '$missionPending', label: 'متابعة مفتوحة')),
+                  ],
+                ),
               ],
             ),
           ),
@@ -53,7 +64,7 @@ class FiRouteScreen extends StatelessWidget {
             _LessonCard(
               index: i + 1,
               lesson: route.lessons[i],
-              completed: saved.completedLessonIds.contains(route.lessons[i].id),
+              progress: saved.lessonProgress[route.lessons[i].id] ?? const LearningLessonProgress(),
             ),
             const SizedBox(height: 10),
           ],
@@ -69,9 +80,9 @@ class FiRouteScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('جرّبي مختبر المواقف', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.plum)),
+                      Text('مختبر المواقف', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.plum)),
                       SizedBox(height: 4),
-                      Text('طبقي اللي عم تتعلميه على موقف حقيقي من حياتك.', style: TextStyle(fontSize: 11.5, height: 1.6, color: AppColors.softText)),
+                      Text('حتى بعد ما تتقني المهارة، كل موقف جديد بيخلي عندك مساحة تطبقيها بشكل أذكى.', style: TextStyle(fontSize: 11.5, height: 1.6, color: AppColors.softText)),
                     ],
                   ),
                 ),
@@ -85,12 +96,46 @@ class FiRouteScreen extends StatelessWidget {
   }
 }
 
+class _Metric extends StatelessWidget {
+  const _Metric({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.70), borderRadius: BorderRadius.circular(14)),
+      child: Column(
+        children: [
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.plum)),
+          const SizedBox(height: 2),
+          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 8.8, fontWeight: FontWeight.w700, color: AppColors.mutedText)),
+        ],
+      ),
+    );
+  }
+}
+
 class _LessonCard extends StatelessWidget {
-  const _LessonCard({required this.index, required this.lesson, required this.completed});
+  const _LessonCard({required this.index, required this.lesson, required this.progress});
 
   final int index;
   final FiLesson lesson;
-  final bool completed;
+  final LearningLessonProgress progress;
+
+  String get _status {
+    if (progress.missionPending) return 'مهمة بالحياة — بانتظار المتابعة';
+    if (progress.applied) return 'طُبقت بالحياة ${progress.realLifeApplications} مرة';
+    if (progress.hasStarted) return 'جلسة تدريب بدأت';
+    return 'جلسة جديدة';
+  }
+
+  Color get _statusColor {
+    if (progress.applied) return AppColors.success;
+    if (progress.missionPending) return AppColors.gold;
+    return AppColors.lilac;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,16 +145,18 @@ class _LessonCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: completed ? AppColors.sage.withOpacity(0.18) : AppColors.lavender.withOpacity(0.12),
+              color: _statusColor.withOpacity(0.11),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
-              child: completed
-                  ? const Icon(Icons.check_rounded, color: AppColors.success, size: 20)
-                  : Text('$index', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.lilac)),
+              child: progress.applied
+                  ? const Icon(Icons.eco_rounded, color: AppColors.success, size: 20)
+                  : progress.missionPending
+                      ? const Icon(Icons.schedule_rounded, color: AppColors.gold, size: 19)
+                      : Text('$index', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.lilac)),
             ),
           ),
           const SizedBox(width: 11),
@@ -119,7 +166,9 @@ class _LessonCard extends StatelessWidget {
               children: [
                 Text(lesson.title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: AppColors.plum)),
                 const SizedBox(height: 3),
-                Text(lesson.subtitle, style: const TextStyle(fontSize: 10.5, height: 1.55, color: AppColors.mutedText)),
+                Text(lesson.subtitle, style: const TextStyle(fontSize: 10.5, height: 1.5, color: AppColors.mutedText)),
+                const SizedBox(height: 5),
+                Text(_status, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: _statusColor)),
               ],
             ),
           ),

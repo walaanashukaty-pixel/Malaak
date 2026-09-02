@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../models/fi_models.dart';
 
 abstract final class FiCatalog {
@@ -123,6 +125,45 @@ abstract final class FiCatalog {
         FiAssessmentOption(id: 'c', label: 'المهم أوصل لقرار واضح.', weights: FiWeights(practicalIntelligence: 2)),
         FiAssessmentOption(id: 'd', label: 'المهم أعرف نيتي وأختار أفضل وقت وطريقة.', weights: FiWeights(relationalWisdom: 3)),
       ],
+    ),
+  ];
+
+  static const models = <FiModelDescriptor>[
+    FiModelDescriptor(
+      routeId: 'feminine-naivety',
+      title: 'السذاجة الأنثوية',
+      shortTitle: 'التنازل عن الذات',
+      description: 'لما رضا الناس أو الخوف من الرفض يدخل قبل قرارك وحدودك.',
+      strength: 'عندك تعاطف واهتمام بالعلاقة.',
+      growthEdge: 'تبقي طيبة بدون ما تتركي نفسك.',
+      icon: Icons.favorite_outline_rounded,
+    ),
+    FiModelDescriptor(
+      routeId: 'masculine-rigidity',
+      title: 'التعصب الذكوري',
+      shortTitle: 'القوة المتعبة',
+      description: 'لما الاستعجال والسيطرة والتصلب بالرأي يضيقوا الخيارات ويزيدوا الحمل.',
+      strength: 'عندك قرار وقوة وقدرة على الإنجاز.',
+      growthEdge: 'تحافظي على القوة مع مرونة وتوقيت أذكى.',
+      icon: Icons.bolt_rounded,
+    ),
+    FiModelDescriptor(
+      routeId: 'masculine-intelligence',
+      title: 'الذكاء الذكوري',
+      shortTitle: 'القرار العملي',
+      description: 'عندك قدرة جيدة على التنظيم، الأولويات، والقرار، والمرحلة الجاية تضيف حكمة عاطفية وعلاقية.',
+      strength: 'منطق عملي وقدرة على التوقف قبل التصرف.',
+      growthEdge: 'إضافة الوقت والمسافة والمشاعر والنية للقرار.',
+      icon: Icons.psychology_alt_rounded,
+    ),
+    FiModelDescriptor(
+      routeId: 'feminine-intelligence-advanced',
+      title: 'الذكاء الأنثوي',
+      shortTitle: 'الحكمة العلاقية',
+      description: 'الوقت والمسافة وفهم المشاعر والنية حاضرة عندك بدرجة جيدة، وهون منعمّق التطبيق بالمواقف الأصعب.',
+      strength: 'قدرة على رؤية أكثر من طرف وحماية الهدف والعلاقة معًا.',
+      growthEdge: 'تحويل المهارة إلى عادة ثابتة بالمواقف الحقيقية.',
+      icon: Icons.auto_awesome_rounded,
     ),
   ];
 
@@ -276,8 +317,127 @@ abstract final class FiCatalog {
     ],
   );
 
+  static const masculineIntelligenceRoute = FiRoute(
+    id: 'masculine-intelligence',
+    title: 'من الذكاء العملي إلى الذكاء الأنثوي',
+    resultTitle: 'عندك قاعدة قوية من الذكاء العملي',
+    resultBody: 'إجاباتك بتبين قدرة جيدة على التوقف، جمع المعلومات، وترتيب القرار. رحلتك ما رح ترجعك لورا؛ رح تضيف للمنطق توقيتًا ومشاعر ومرونة وعلاقات أذكى.',
+    goal: 'أحوّل القرار الجيد إلى قرار حكيم يراعي المعلومات والمشاعر والتوقيت والنتائج معًا.',
+    lessons: [
+      FiLesson(
+        id: 'masc-intel-01',
+        title: 'من الانفعال إلى الاستجابة',
+        subtitle: 'أترك مساحة صغيرة قبل القرار لما يرتفع الشعور.',
+        insight: 'القرار القوي مو القرار الأسرع؛ هو القرار اللي ما تختطفه لحظة غضب أو خوف.',
+        prompt: 'لما تكوني منفعلة، شو أكثر شي بيخليك تحسمي بسرعة؟',
+        practice: 'بأول موقف مشحون، سمّي الشعور وشدته من 1 إلى 10 وخدي وقفة قبل أي قرار غير طارئ.',
+        choices: ['بدي أخلص من التوتر', 'بخاف أغير رأيي', 'بحس لازم أكون حاسمة', 'بصعب علي أترك الموضوع معلق'],
+      ),
+      FiLesson(
+        id: 'masc-intel-02',
+        title: 'أوسع خريطة القرار',
+        subtitle: 'معلومات + خيارات + نتائج قصيرة وبعيدة.',
+        insight: 'أحيانًا القرار منطقي ضمن معلومتين، لكن يتغير لما نضيف معلومة ثالثة أو أثر بعيد المدى.',
+        prompt: 'بقرار قريب، شو المعلومة اللي لو عرفتيها ممكن تغير اختيارك؟',
+        practice: 'قبل قرار مهم اكتبي: شو بعرف؟ شو ما بعرف؟ شو 3 خيارات؟ وشو أثر كل خيار بعد أسبوع وبعد 6 أشهر؟',
+      ),
+      FiLesson(
+        id: 'masc-intel-03',
+        title: 'التوقيت جزء من القرار',
+        subtitle: 'نفس الكلام ممكن ينجح أو يفشل حسب اللحظة.',
+        insight: 'صحة الفكرة ما بتلغي أهمية توقيتها. الشخص المتعب أو المنفعل ممكن يسمع نفس الكلام بطريقة مختلفة.',
+        prompt: 'بآخر حوار صعب، هل المشكلة كانت بالمحتوى ولا بالتوقيت كمان؟',
+        practice: 'قبل حوار واحد اليوم اسألي: هل أنا جاهزة؟ هل هو جاهز؟ وإذا لا، متى وقت أفضل محدد؟',
+      ),
+      FiLesson(
+        id: 'masc-intel-04',
+        title: 'أقرأ الشعور بدون ما أخمن',
+        subtitle: 'أحول تفسير مشاعر الآخر إلى احتمال يحتاج دليل.',
+        insight: 'فهم الطرف الآخر مو قراءة أفكاره. منقول "ممكن" ونبحث عن دليل أو نسأل.',
+        prompt: 'شو أكثر شعور بتفترضي بسرعة إنه عند الطرف الآخر وقت الخلاف؟',
+        practice: 'اختاري موقفًا واكتبي: شو أتوقع إنه يشعر؟ شو الدليل؟ شو السؤال اللي ممكن يوضح بدل الافتراض؟',
+      ),
+      FiLesson(
+        id: 'masc-intel-05',
+        title: 'النية تقود الأسلوب',
+        subtitle: 'أعرف شو بدي قبل ما أبدأ الكلام.',
+        insight: 'لما تكون النية غامضة، الحوار ممكن يتحول من حل لإثبات أو دفاع بدون ما ننتبه.',
+        prompt: 'قبل موقف مهم: بدك فهم، حل، حد، تعبير، ولا إثبات وجهة نظر؟',
+        practice: 'اكتبي نيتك بجملة واحدة قبل الحوار، وبعده راجعي: هل أسلوبك خدمها فعلًا؟',
+      ),
+    ],
+  );
+
+  static const feminineIntelligenceRoute = FiRoute(
+    id: 'feminine-intelligence-advanced',
+    title: 'تعميق الذكاء الأنثوي',
+    resultTitle: 'الذكاء الأنثوي هو الأقرب حاليًا',
+    resultBody: 'هذا مو معناه إن الرحلة خلصت. عندك أساس جيد، وهون منحوّل الوقت والمسافة والمشاعر والنية إلى مهارة ثابتة حتى بالمواقف الأصعب.',
+    goal: 'أعمّق الحكمة العلاقية وأثبتها بالمواقف الحقيقية بدل ما تبقى معرفة نظرية.',
+    lessons: [
+      FiLesson(
+        id: 'fem-intel-01',
+        title: 'فن الوقت',
+        subtitle: 'أختار متى أتكلم ومتى أنتظر بوعي.',
+        insight: 'التأخير مو دائمًا هروب، والسرعة مو دائمًا شجاعة. الحكمة تحدد التوقيت حسب الهدف والاستعداد.',
+        prompt: 'بأي نوع مواقف بيكون اختيار التوقيت أصعب عليك؟',
+        practice: 'اختاري حوارًا واحدًا وحددي قبل دخوله: ليش الآن؟ وشو العلامة اللي بتقول إن الوقت مناسب؟',
+      ),
+      FiLesson(
+        id: 'fem-intel-02',
+        title: 'فن المسافة',
+        subtitle: 'أقرب للفهم أو أبتعد للصورة الأكبر حسب الحاجة.',
+        insight: 'المسافة الذكية مو عقاب ولا اختفاء؛ هي مقدار القرب اللي يساعدك تشوفي الصورة بدون ما تغرقي فيها.',
+        prompt: 'لما تتوتري بعلاقة، بتميلِي غالبًا للقرب الزائد ولا الابتعاد الزائد؟',
+        practice: 'بموقف واحد حددي المسافة المطلوبة: دقائق، ساعات، سؤال توضيحي، أو اقتراب للحوار بدل التخمين.',
+      ),
+      FiLesson(
+        id: 'fem-intel-03',
+        title: 'مشاعري ومشاعره',
+        subtitle: 'أفهم نفسي وأترك شعور الآخر احتمالًا قابلًا للتحقق.',
+        insight: 'المشاعر معلومة مهمة، لكن تفسيرنا لمشاعر الآخرين يظل احتمالًا حتى نسأل أو نجد دليلًا.',
+        prompt: 'شو شعورك اللي غالبًا يختفي تحت الغضب أو البرود؟',
+        practice: 'اكتبي في موقف: أنا أشعر بـ… وأحتاج… وأتوقع أنه يشعر بـ… والدليل عندي هو…',
+      ),
+      FiLesson(
+        id: 'fem-intel-04',
+        title: 'وضوح النية',
+        subtitle: 'أحمي الهدف قبل ما يشدني الانفعال.',
+        insight: 'لما أعرف شو بدي من الحوار، بصير أسهل أختار الكلمات والتوقيت والحدود اللي تخدم هالهدف.',
+        prompt: 'شو النية اللي بتضيع منك أسرع وقت الخلاف؟',
+        practice: 'قبل موقف حقيقي اكتبي نيتك، وبعده قيّمي من 1 إلى 10: قديش تصرفك خدمها؟',
+      ),
+      FiLesson(
+        id: 'fem-intel-05',
+        title: 'القرار المتوازن',
+        subtitle: 'حقي + هدفي + العلاقة + الواقع.',
+        insight: 'الحكمة ما تعني إرضاء الجميع؛ تعني إنك تشوفي أكبر قدر ممكن من الصورة قبل ما تختاري.',
+        prompt: 'لما تتعارض مصلحتك مع راحة شخص قريب، شو الشي اللي بدك توازنيه بشكل أحسن؟',
+        practice: 'مرري قرارًا واحدًا على أربع عدسات: حقي، هدفي، أثره على العلاقة، والواقع العملي. بعدها اختاري.',
+      ),
+    ],
+  );
+
+  static const allRoutes = <FiRoute>[
+    feminineNaivetyRoute,
+    masculineRigidityRoute,
+    masculineIntelligenceRoute,
+    feminineIntelligenceRoute,
+  ];
+
   static FiRoute routeById(String id) {
     if (id == masculineRigidityRoute.id) return masculineRigidityRoute;
+    if (id == masculineIntelligenceRoute.id) return masculineIntelligenceRoute;
+    if (id == feminineIntelligenceRoute.id || id == 'advanced') return feminineIntelligenceRoute;
     return feminineNaivetyRoute;
   }
+
+  static FiModelDescriptor modelByRouteId(String id) {
+    final normalized = id == 'advanced' ? feminineIntelligenceRoute.id : id;
+    return models.firstWhere(
+      (model) => model.routeId == normalized,
+      orElse: () => models.first,
+    );
+  }
+
 }

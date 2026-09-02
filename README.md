@@ -1,4 +1,12 @@
-# Malaak Android Release Readiness — Source 0.6.6+10
+# Malaak Android Release Readiness — Source 0.6.7+11
+
+## V6.7 conversational feminine-intelligence training
+
+The `feminine-intelligence` domain now behaves like a guided conversation instead of a questionnaire and one-click lesson list. Assessment answers no longer auto-advance; users explicitly move with **السابق / التالي**, can edit earlier answers, and see their answer as a chat bubble with a short Malaak reflection.
+
+After assessment, all four educational models are shown: feminine naivety, masculine rigidity, masculine intelligence, and feminine intelligence. Malaak highlights one **recommended starting route**, but the user can choose any route. Mixed answers never end in a "you need nothing" state.
+
+Training sessions now use multiple interactions: discovery, coach reflection, a simulated scenario, feedback/retry, personal reflection, a real-life mission, and a later follow-up. In-app practice creates a pending mission rather than instant mastery. Route progress separates **جلسات تدريب** from **تطبيقات حقيقية** and pending follow-ups. Existing Supabase `malaak_learning_states` JSON persistence stores the richer progress without a new table migration. All other Malaak domains remain intact.
 
 ## V6.6 feminine-intelligence trial
 

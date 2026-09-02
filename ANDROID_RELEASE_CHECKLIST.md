@@ -1,6 +1,6 @@
 # Android Release Checklist — Malaak
 
-This checklist is for the real Android build environment. Source version: `0.6.6+10`.
+This checklist is for the real Android build environment. Source version: `0.6.7+11`.
 
 ## Identity
 

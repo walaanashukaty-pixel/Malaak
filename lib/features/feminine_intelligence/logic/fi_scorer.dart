@@ -22,16 +22,31 @@ abstract final class FiScorer {
     return scores;
   }
 
-  static String route(Map<String, int> scores) {
-    final pleasing = scores['peoplePleasing'] ?? 0;
-    final rigidity = scores['controlRigidity'] ?? 0;
-    final practical = scores['practicalIntelligence'] ?? 0;
-    final relational = scores['relationalWisdom'] ?? 0;
+  static String recommendRoute(Map<String, int> scores) {
+    final ranked = rankedRoutes(scores);
+    return ranked.isEmpty ? FiCatalog.feminineIntelligenceRoute.id : ranked.first;
+  }
 
-    if (pleasing >= 10 && pleasing >= rigidity + 3) return 'feminine-naivety';
-    if (rigidity >= 10 && rigidity >= pleasing + 3) return 'masculine-rigidity';
-    if ((practical + relational) >= (pleasing + rigidity)) return 'advanced';
-    return pleasing >= rigidity ? 'feminine-naivety' : 'masculine-rigidity';
+  static List<String> rankedRoutes(Map<String, int> scores) {
+    final weighted = <MapEntry<String, int>>[
+      MapEntry(FiCatalog.feminineNaivetyRoute.id, scores['peoplePleasing'] ?? 0),
+      MapEntry(FiCatalog.masculineRigidityRoute.id, scores['controlRigidity'] ?? 0),
+      MapEntry(FiCatalog.masculineIntelligenceRoute.id, scores['practicalIntelligence'] ?? 0),
+      MapEntry(FiCatalog.feminineIntelligenceRoute.id, scores['relationalWisdom'] ?? 0),
+    ];
+    weighted.sort((a, b) {
+      final scoreCompare = b.value.compareTo(a.value);
+      if (scoreCompare != 0) return scoreCompare;
+      // In ties prefer the more integrative route, while keeping the result a recommendation only.
+      const priority = <String, int>{
+        'feminine-intelligence-advanced': 4,
+        'masculine-intelligence': 3,
+        'feminine-naivety': 2,
+        'masculine-rigidity': 1,
+      };
+      return (priority[b.key] ?? 0).compareTo(priority[a.key] ?? 0);
+    });
+    return weighted.map((entry) => entry.key).toList(growable: false);
   }
 }
 

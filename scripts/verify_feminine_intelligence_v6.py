@@ -38,7 +38,7 @@ for dim in ['peoplePleasing', 'controlRigidity', 'practicalIntelligence', 'relat
     assert dim in models or dim in catalog or dim in scorer, f'missing assessment dimension {dim}'
 assert 'feminine-naivety' in scorer, 'naivety route missing in scorer'
 assert 'masculine-rigidity' in scorer, 'rigidity route missing in scorer'
-assert 'advanced' in scorer, 'advanced route missing in scorer'
+assert ('advanced' in scorer) or ('masculine-intelligence' in scorer and 'feminine-intelligence-advanced' in scorer), 'advanced/four-route recommendation missing in scorer'
 question_ids = set(re.findall(r"id:\s*'assessment-[^']+'", catalog))
 assert len(question_ids) >= 12, f'need at least 12 assessment scenarios, found {len(question_ids)}'
 
@@ -51,8 +51,8 @@ assert len(rigidity_lessons) >= 9, f'need 9 rigidity lessons, found {len(rigidit
 # UI routing + language guardrails
 assert "domain.id == 'feminine-intelligence'" in domain, 'journey detail does not delegate feminine-intelligence feature'
 assert 'FeminineIntelligenceScreen' in domain, 'feature screen integration missing'
-assert 'نقطة بدايتك' in home or 'نقطة البداية' in home, 'non-diagnostic start copy missing'
-assert 'اختبار' in assessment or 'خريطة' in assessment, 'assessment UI missing'
+assert 'نقطة بدايتك' in home or 'نقطة البداية' in home or 'خريطتك الحالية' in home, 'non-diagnostic start copy missing'
+assert 'اختبار' in assessment or 'خريطة' in assessment or 'جلسة' in assessment, 'assessment UI missing'
 assert 'FiRouteScreen' in home or 'FiRouteScreen' in route, 'route screen not wired'
 assert 'completedLessonIds' in lesson, 'lesson completion is not persisted'
 
