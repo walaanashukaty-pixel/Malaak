@@ -17,6 +17,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _name = TextEditingController();
   bool _register = false;
   bool _busy = false;
+  bool _showPassword = false;
   String? _message;
   bool _messageIsError = false;
 
@@ -26,6 +27,69 @@ class _AuthScreenState extends State<AuthScreen> {
     _password.dispose();
     _name.dispose();
     super.dispose();
+  }
+
+
+  String _friendlyAuthMessage(AuthException error) {
+    final message = error.message.toLowerCase();
+    if (message.contains('invalid login credentials')) {
+      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+    }
+    if (message.contains('email not confirmed')) {
+      return 'لازم تأكدي بريدك الإلكتروني أولًا، وبعدها جرّبي تسجيل الدخول.';
+    }
+    if (message.contains('user already registered') || message.contains('already been registered')) {
+      return 'هذا البريد مستخدم من قبل. جرّبي تسجيل الدخول بدل إنشاء حساب جديد.';
+    }
+    if (message.contains('password')) {
+      return 'كلمة المرور غير مقبولة. استخدمي 6 أحرف على الأقل وحاولي مرة ثانية.';
+    }
+    if (message.contains('rate limit') || message.contains('too many')) {
+      return 'صار في محاولات كثيرة خلال وقت قصير. جرّبي مرة ثانية بعد قليل.';
+    }
+    return 'تعذر إكمال العملية الآن. تأكدي من البيانات والإنترنت وحاولي مرة ثانية.';
+  }
+
+  Future<void> _resetPassword() async {
+    final email = _email.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() {
+        _messageIsError = true;
+        _message = 'اكتبي بريدك الإلكتروني أولًا حتى نرسل رابط استعادة كلمة المرور.';
+      });
+      return;
+    }
+
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(email);
+      if (mounted) {
+        setState(() {
+          _messageIsError = false;
+          _message = 'أرسلنا رابط استعادة كلمة المرور إلى بريدك إذا كان الحساب موجودًا.';
+        });
+      }
+    } on AuthException catch (error) {
+      if (mounted) {
+        setState(() {
+          _messageIsError = true;
+          _message = _friendlyAuthMessage(error);
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _messageIsError = true;
+          _message = 'تعذر إرسال رابط الاستعادة الآن. تأكدي من الإنترنت وحاولي مرة ثانية.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -68,7 +132,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (mounted) {
         setState(() {
           _messageIsError = true;
-          _message = error.message;
+          _message = _friendlyAuthMessage(error);
         });
       }
     } catch (_) {
@@ -141,6 +205,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     const SizedBox(height: 18),
                     if (_register) ...[
                       TextField(
+                        enabled: !_busy,
                         controller: _name,
                         textInputAction: TextInputAction.next,
                         decoration: const InputDecoration(
@@ -151,6 +216,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 12),
                     ],
                     TextField(
+                      enabled: !_busy,
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -162,16 +228,31 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextField(
+                      enabled: !_busy,
                       controller: _password,
-                      obscureText: true,
+                      obscureText: !_showPassword,
                       onSubmitted: (_) {
                         if (!_busy) _submit();
                       },
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        prefixIcon: Icon(Icons.lock_outline_rounded),
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        suffixIcon: IconButton(
+                          tooltip: _showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور',
+                          onPressed: _busy ? null : () => setState(() => _showPassword = !_showPassword),
+                          icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
+                        ),
                       ),
                     ),
+                    if (!_register) ...[
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton(
+                          onPressed: _busy ? null : _resetPassword,
+                          child: const Text('نسيت كلمة المرور؟'),
+                        ),
+                      ),
+                    ],
                     if (_message != null) ...[
                       const SizedBox(height: 14),
                       Text(

@@ -1,14 +1,19 @@
-MALAAK V6.1 - START HERE
+MALAAK V6.3 - START HERE
 
-1. Extract this ZIP completely.
-2. Open the extracted folder.
-3. Double-click: UPLOAD_TO_GITHUB.bat
-4. If GitHub opens a browser sign-in window, sign in to walaanashukaty-pixel.
-5. After upload succeeds, the script opens GitHub Actions automatically.
-6. The Android build will run in GitHub cloud. When it finishes, download the artifact named malaak-android-apk.
+SAFE GITHUB UPLOAD
+==================
+1. Extract this ZIP into a NEW folder.
+2. Double-click UPLOAD_TO_GITHUB.bat.
+3. If GitHub opens a browser sign-in, finish the sign-in.
+4. Wait for the SUCCESS message.
+5. The script opens GitHub Actions automatically so you can watch the Android build.
 
-Repository already configured in the launcher:
-https://github.com/walaanashukaty-pixel/Malaak
+IMPORTANT
+=========
+Do NOT run git init and do NOT use git push --force.
+This V6.3 uploader clones the latest GitHub main branch first, overlays the Malaak files, then commits and pushes safely.
+This fixes the previous fetch-first / non-fast-forward problem.
 
-No GitHub password or token is stored in this package.
-Flutter does NOT need to be installed on this computer for the GitHub Actions cloud build.
+Supabase target for Malaak:
+walaanashukaty-pixel's Project
+Project ref: puwomvazbzvjmzzmogoj

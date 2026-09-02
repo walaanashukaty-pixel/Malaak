@@ -1,0 +1,16 @@
+Malaak V6.3 - GitHub Safe Upload Fix
+
+Fixed:
+- Removed fresh-history upload flow that used git init.
+- Safe uploader now clones the latest GitHub main branch first.
+- Project files are overlaid on the latest remote history.
+- Push uses normal fast-forward history; no force push.
+- One automatic git pull --rebase is performed before the final push.
+- Existing Android CI fixes from GitHub are preserved.
+- Supabase/Auth fixes from V6.2 are preserved.
+
+Use:
+1. Extract this ZIP into a new folder.
+2. Double-click UPLOAD_TO_GITHUB.bat.
+3. Complete GitHub browser sign-in if requested.
+4. Wait for SUCCESS.

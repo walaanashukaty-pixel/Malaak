@@ -28,15 +28,25 @@ class _AuthGateState extends State<AuthGate> {
     super.initState();
     final auth = Supabase.instance.client.auth;
     _session = auth.currentSession;
-    _subscription = auth.onAuthStateChange.listen((data) async {
-      if (!mounted) return;
-      setState(() {
-        _session = data.session;
-        _switching = true;
-      });
-      await widget.controller.reloadForSession();
-      if (mounted) setState(() => _switching = false);
-    });
+    _subscription = auth.onAuthStateChange.listen(
+      (data) async {
+        if (!mounted) return;
+        setState(() {
+          _session = data.session;
+          _switching = true;
+        });
+        try {
+          await widget.controller.reloadForSession();
+        } finally {
+          if (mounted) setState(() => _switching = false);
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        // Keep the last known session on transient refresh/network failures.
+        // Supabase will retry/refresh again; the UI must not crash.
+        debugPrint('Malaak auth state error: $error');
+      },
+    );
   }
 
   @override

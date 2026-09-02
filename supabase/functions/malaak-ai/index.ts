@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
-import { requestStructuredCoaching, safetyPayload } from './coach.ts';
+import { deterministicFallback, requestStructuredCoaching, safetyPayload } from './coach.ts';
 import { deriveCatalogContextFlags, loadEligibleInterventions } from './catalog.ts';
 import { persistCoachingEvidence } from './formulation_repository.ts';
 import { refreshJourneyPlanForUser, suspendJourneyPlanForSafety } from './journey_repository.ts';
@@ -55,29 +55,20 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ mode: 'safety', reply: turn.reply, turn }), { status: 200, headers: jsonHeaders });
   }
 
-  const apiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({
-        mode: 'configuration_required',
-        reply: 'ملاك السحابية مربوطة بالتطبيق، لكن مفتاح الذكاء الاصطناعي لسه مو مفعّل على الخادم. بياناتك محفوظة، والتطبيق يقدر يكمل بالوضع المحلي.',
-        turn: null,
-      }),
-      { status: 200, headers: jsonHeaders },
-    );
-  }
-
   const flags = deriveCatalogContextFlags(message, body.context ?? {});
   const eligible = await loadEligibleInterventions(route, flags);
+  const apiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
 
-  const turn = await requestStructuredCoaching({
-    apiKey,
-    model: Deno.env.get('MALAAK_OPENAI_MODEL') ?? 'gpt-5.6-luna',
-    message,
-    context: body.context ?? {},
-    route,
-    eligible,
-  });
+  const turn = apiKey
+    ? await requestStructuredCoaching({
+        apiKey,
+        model: Deno.env.get('MALAAK_OPENAI_MODEL') ?? 'gpt-5-mini',
+        message,
+        context: body.context ?? {},
+        route,
+        eligible,
+      })
+    : deterministicFallback(route, eligible);
 
   try {
     await persistCoachingEvidence({

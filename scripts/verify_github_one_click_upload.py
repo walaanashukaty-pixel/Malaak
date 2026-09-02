@@ -8,12 +8,14 @@ assert launcher.exists(), 'UPLOAD_TO_GITHUB.bat is missing'
 text = launcher.read_text(encoding='utf-8')
 required = [
     'https://github.com/walaanashukaty-pixel/Malaak.git',
-    'git init',
-    'git remote',
+    'git clone',
+    'robocopy',
     'git add -A',
     'git commit',
-    'git push -u origin main',
+    'git push origin main',
 ]
+for forbidden_flow in ['git init', 'git push -u origin main']:
+    assert forbidden_flow not in text, f'unsafe fresh-history upload flow remains: {forbidden_flow}'
 for item in required:
     assert item in text, f'missing launcher behavior: {item}'
 
