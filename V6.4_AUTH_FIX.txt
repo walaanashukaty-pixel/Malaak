@@ -1,0 +1,11 @@
+Malaak Android V6.4 - Auth Login/Register Fix
+
+Changes:
+- Removed the hard-coded 6-character password rule from client-side login/register validation.
+- Login now sends any non-empty password exactly as entered to Supabase.
+- Supabase remains the single source of truth for new-password strength policy.
+- Added action-aware Arabic Auth error messages for sign-in vs sign-up.
+- Added clear handling for invalid credentials, unconfirmed email, existing user, disabled signup, weak password, rate limits, and network errors.
+- Password reset flow remains available.
+- Supabase project binding remains: puwomvazbzvjmzzmogoj.
+- GitHub safe uploader from V6.3 remains included.

@@ -16,4 +16,11 @@ assert 'enabled: !_busy' in auth, 'Auth inputs are not disabled while submitting
 assert 'onError:' in gate, 'Auth state stream has no error handler'
 assert 'deterministicFallback' in edge, 'Cloud function does not use V6.1 deterministic fallback when OpenAI is unavailable'
 assert "mode: 'configuration_required'" not in edge, 'Missing OpenAI key still produces configuration_required instead of coaching fallback'
+
+assert "password.isEmpty" in auth, 'Login must only require a non-empty password before calling Supabase'
+assert "password.length < 6" not in auth, 'Client must not hard-code Supabase password policy'
+assert "_friendlyAuthMessage(error, registering: _register)" in auth, 'Auth error mapping must know whether the action is sign-in or sign-up'
+assert "weak password" in auth.lower() or "weak_password" in auth.lower(), 'Weak-password errors need a dedicated message'
+assert "البريد غير مسجل" in auth or "غير صحيحة" in auth, 'Invalid-login errors need a clear Arabic sign-in message'
+
 print('PASS approved Supabase binding and resilient auth/AI fallback verification')

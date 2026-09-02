@@ -30,24 +30,53 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
 
-  String _friendlyAuthMessage(AuthException error) {
+  String _friendlyAuthMessage(
+    AuthException error, {
+    required bool registering,
+  }) {
     final message = error.message.toLowerCase();
-    if (message.contains('invalid login credentials')) {
-      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+
+    if (message.contains('invalid login credentials') ||
+        message.contains('invalid credentials') ||
+        message.contains('user not found')) {
+      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة، أو الحساب غير موجود على ملاك.';
     }
-    if (message.contains('email not confirmed')) {
+    if (message.contains('email not confirmed') || message.contains('email_not_confirmed')) {
       return 'لازم تأكدي بريدك الإلكتروني أولًا، وبعدها جرّبي تسجيل الدخول.';
     }
-    if (message.contains('user already registered') || message.contains('already been registered')) {
-      return 'هذا البريد مستخدم من قبل. جرّبي تسجيل الدخول بدل إنشاء حساب جديد.';
+    if (message.contains('user already registered') ||
+        message.contains('already been registered') ||
+        message.contains('user_already_exists')) {
+      return 'هذا البريد مستخدم من قبل. انتقلي إلى تسجيل الدخول بدل إنشاء حساب جديد.';
     }
-    if (message.contains('password')) {
-      return 'كلمة المرور غير مقبولة. استخدمي 6 أحرف على الأقل وحاولي مرة ثانية.';
+    if (message.contains('signup is disabled') ||
+        message.contains('signups not allowed') ||
+        message.contains('signup_disabled')) {
+      return 'إنشاء الحسابات غير مفعّل حاليًا على Supabase. فعّلي Email Signups من إعدادات Authentication.';
     }
-    if (message.contains('rate limit') || message.contains('too many')) {
-      return 'صار في محاولات كثيرة خلال وقت قصير. جرّبي مرة ثانية بعد قليل.';
+    if (message.contains('weak password') ||
+        message.contains('weak_password') ||
+        message.contains('password should') ||
+        message.contains('password is too weak') ||
+        message.contains('password must')) {
+      if (registering) {
+        return 'كلمة المرور لا تطابق متطلبات الأمان الحالية في Supabase. اختاري كلمة مرور أقوى ثم حاولي مرة ثانية.';
+      }
+      return 'كلمة مرور هذا الحساب لا تطابق سياسة الأمان الحالية. استخدمي «نسيت كلمة المرور؟» لتعيين كلمة مرور جديدة.';
     }
-    return 'تعذر إكمال العملية الآن. تأكدي من البيانات والإنترنت وحاولي مرة ثانية.';
+    if (message.contains('email address') &&
+        (message.contains('invalid') || message.contains('not valid'))) {
+      return 'صيغة البريد الإلكتروني غير صحيحة. تأكدي من البريد وحاولي مرة ثانية.';
+    }
+    if (message.contains('rate limit') ||
+        message.contains('too many') ||
+        message.contains('over_email_send_rate_limit')) {
+      return 'صار في محاولات كثيرة خلال وقت قصير. انتظري قليلًا ثم حاولي مرة ثانية.';
+    }
+
+    return registering
+        ? 'تعذر إنشاء الحساب الآن. تأكدي من البريد والاتصال بالإنترنت وحاولي مرة ثانية.'
+        : 'تعذر تسجيل الدخول الآن. تأكدي من البريد وكلمة المرور والإنترنت وحاولي مرة ثانية.';
   }
 
   Future<void> _resetPassword() async {
@@ -77,7 +106,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (mounted) {
         setState(() {
           _messageIsError = true;
-          _message = _friendlyAuthMessage(error);
+          _message = _friendlyAuthMessage(error, registering: false);
         });
       }
     } catch (_) {
@@ -96,12 +125,12 @@ class _AuthScreenState extends State<AuthScreen> {
     final email = _email.text.trim();
     final password = _password.text;
     final name = _name.text.trim();
-    if (email.isEmpty || password.length < 6 || (_register && name.isEmpty)) {
+    if (email.isEmpty || !email.contains('@') || password.isEmpty || (_register && name.isEmpty)) {
       setState(() {
         _messageIsError = true;
         _message = _register
-            ? 'اكتبي الاسم والإيميل وكلمة مرور من 6 أحرف على الأقل.'
-            : 'اكتبي الإيميل وكلمة مرور من 6 أحرف على الأقل.';
+            ? 'اكتبي الاسم والبريد الإلكتروني وكلمة المرور.'
+            : 'اكتبي البريد الإلكتروني وكلمة المرور.';
       });
       return;
     }
@@ -132,14 +161,16 @@ class _AuthScreenState extends State<AuthScreen> {
       if (mounted) {
         setState(() {
           _messageIsError = true;
-          _message = _friendlyAuthMessage(error);
+          _message = _friendlyAuthMessage(error, registering: _register);
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
           _messageIsError = true;
-          _message = 'تعذر الاتصال الآن. تأكدي من الإنترنت وحاولي مرة ثانية.';
+          _message = _register
+              ? 'تعذر إنشاء الحساب الآن بسبب مشكلة اتصال. تأكدي من الإنترنت وحاولي مرة ثانية.'
+              : 'تعذر تسجيل الدخول الآن بسبب مشكلة اتصال. تأكدي من الإنترنت وحاولي مرة ثانية.';
         });
       }
     } finally {
