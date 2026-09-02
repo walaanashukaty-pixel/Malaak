@@ -7,6 +7,7 @@ import '../models/app_state.dart';
 import '../models/initial_map.dart';
 import '../models/hypothesis_item.dart';
 import '../models/journey_plan.dart';
+import '../models/learning_journey_state.dart';
 import '../models/user_preferences.dart';
 import 'app_repository.dart';
 
@@ -71,9 +72,11 @@ class SupabaseAppRepository implements SyncableAppRepository, HypothesisAppRepos
       final remoteMapState = AppStateData.fromJson(remoteMap);
       final initialMap = await _loadInitialMapFromCloud();
       final journeyPlan = await _loadJourneyPlanFromCloud();
+      final learningJourneys = await _loadLearningJourneysFromCloud();
       var remote = remoteMapState;
       if (initialMap != null) remote = remote.copyWith(initialMap: initialMap);
       if (journeyPlan != null) remote = remote.copyWith(journeyPlan: journeyPlan);
+      if (learningJourneys.isNotEmpty) remote = remote.copyWith(learningJourneys: learningJourneys);
       await _saveLocal(remote, dirty: false);
       _lastSyncAt = DateTime.now();
       _lastSyncError = null;
@@ -107,9 +110,11 @@ class SupabaseAppRepository implements SyncableAppRepository, HypothesisAppRepos
       final remoteMapState = AppStateData.fromJson(_asMap(raw));
       final initialMap = await _loadInitialMapFromCloud();
       final journeyPlan = await _loadJourneyPlanFromCloud();
+      final learningJourneys = await _loadLearningJourneysFromCloud();
       var remote = remoteMapState;
       if (initialMap != null) remote = remote.copyWith(initialMap: initialMap);
       if (journeyPlan != null) remote = remote.copyWith(journeyPlan: journeyPlan);
+      if (learningJourneys.isNotEmpty) remote = remote.copyWith(learningJourneys: learningJourneys);
       await _saveLocal(remote, dirty: false);
       _lastSyncAt = DateTime.now();
       _lastSyncError = null;
@@ -156,6 +161,7 @@ class SupabaseAppRepository implements SyncableAppRepository, HypothesisAppRepos
       if (state.initialMap != null) {
         await client.rpc('malaak_save_initial_map', params: {'p_map': state.initialMap!.toJson()});
       }
+      await _saveLearningJourneysToCloud(state.learningJourneys);
       await prefs.setBool(_dirtyKey, false);
       _lastSyncAt = DateTime.now();
       _lastSyncError = null;
@@ -195,6 +201,39 @@ class SupabaseAppRepository implements SyncableAppRepository, HypothesisAppRepos
     );
     _lastSyncAt = DateTime.now();
     _lastSyncError = null;
+  }
+
+  Future<Map<String, LearningJourneyState>> _loadLearningJourneysFromCloud() async {
+    final user = client.auth.currentUser;
+    if (user == null) return const <String, LearningJourneyState>{};
+    final raw = await client
+        .from('malaak_learning_states')
+        .select('domain_id,state,updated_at')
+        .eq('user_id', user.id);
+    final result = <String, LearningJourneyState>{};
+    for (final row in raw as List) {
+      final map = Map<String, dynamic>.from(row as Map);
+      final domainId = (map['domain_id'] as String?)?.trim() ?? '';
+      if (domainId.isEmpty || map['state'] is! Map) continue;
+      final stateMap = Map<String, dynamic>.from(map['state'] as Map);
+      stateMap['domainId'] = domainId;
+      stateMap['updatedAt'] ??= map['updated_at'];
+      result[domainId] = LearningJourneyState.fromJson(stateMap);
+    }
+    return result;
+  }
+
+  Future<void> _saveLearningJourneysToCloud(Map<String, LearningJourneyState> states) async {
+    final user = client.auth.currentUser;
+    if (user == null) return;
+    for (final entry in states.entries) {
+      await client.from('malaak_learning_states').upsert({
+        'user_id': user.id,
+        'domain_id': entry.key,
+        'state': entry.value.toJson(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'user_id,domain_id');
+    }
   }
 
   Future<JourneyPlan?> _loadJourneyPlanFromCloud() async {
@@ -252,6 +291,7 @@ class SupabaseAppRepository implements SyncableAppRepository, HypothesisAppRepos
         state.memories.isNotEmpty ||
         state.messages.isNotEmpty ||
         state.coachingTurns.isNotEmpty ||
-        state.pendingFollowUps.isNotEmpty;
+        state.pendingFollowUps.isNotEmpty ||
+        state.learningJourneys.isNotEmpty;
   }
 }

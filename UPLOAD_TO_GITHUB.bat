@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
-title Malaak V6.3 - Safe GitHub Upload
+title Malaak V6.6 - Safe GitHub Upload
 
 set "REPO_URL=https://github.com/walaanashukaty-pixel/Malaak.git"
 set "REPO_NAME=walaanashukaty-pixel/Malaak"
@@ -11,11 +11,11 @@ set "CLONE_DIR=%TEMP_ROOT%\repo"
 
 echo.
 echo =====================================================
-echo   Malaak V6.3 - Safe One Click GitHub Upload
+echo   Malaak V6.6 - Safe One Click GitHub Upload
 echo =====================================================
 echo.
 echo This uploader NEVER creates a new Git history.
-echo It clones the latest main branch first, copies V6.3 over it,
+echo It clones the latest main branch first, copies V6.6 over it,
 echo then commits and pushes on top of GitHub's current history.
 echo.
 echo Target: %REPO_URL%
@@ -40,7 +40,7 @@ git clone --branch main --single-branch "%REPO_URL%" "%CLONE_DIR%"
 if errorlevel 1 goto :clone_error
 
 echo.
-echo [2/5] Copying Malaak V6.3 files over the latest GitHub version...
+echo [2/5] Copying Malaak V6.6 files over the latest GitHub version...
 robocopy "%SOURCE_DIR%" "%CLONE_DIR%" /E /COPY:DAT /DCOPY:DAT /R:2 /W:1 /NFL /NDL /NP /NJH /NJS ^
   /XD ".git" "build" ".dart_tool" ".idea" ".vscode" ^
   /XF "local.properties" ".env" ".env.*" "*.jks" "*.keystore" "key.properties" "android\key.properties"
@@ -54,13 +54,13 @@ git config user.name "walaanashukaty-pixel"
 git config user.email "walaanashukaty-pixel@users.noreply.github.com"
 
 echo.
-echo [3/5] Preparing the V6.3 commit...
+echo [3/5] Preparing the V6.6 commit...
 git add -A
 if errorlevel 1 goto :git_error
 
 git diff --cached --quiet
 if errorlevel 1 (
-  git commit -m "Malaak V6.3 - Supabase Auth and GitHub upload fixed"
+  git commit -m "Malaak V6.6 - Feminine intelligence routed learning trial"
   if errorlevel 1 goto :git_error
 ) else (
   echo No new file changes were detected. GitHub is already up to date.
@@ -79,7 +79,7 @@ if errorlevel 1 goto :push_error
 
 echo.
 echo =====================================================
-echo SUCCESS: Malaak V6.3 was uploaded safely to GitHub.
+echo SUCCESS: Malaak V6.6 was uploaded safely to GitHub.
 echo No force push was used and GitHub history was preserved.
 echo GitHub Actions should now start the Android build.
 echo =====================================================

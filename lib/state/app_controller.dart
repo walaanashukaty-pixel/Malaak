@@ -6,6 +6,7 @@ import '../models/initial_map.dart';
 import '../models/hypothesis_item.dart';
 import '../models/journey_progress.dart';
 import '../models/journey_plan.dart';
+import '../models/learning_journey_state.dart';
 import '../models/memory_item.dart';
 import '../models/malaak_message.dart';
 import '../models/user_preferences.dart';
@@ -56,6 +57,12 @@ class AppController extends ChangeNotifier {
     final old = map[id] ?? JourneyProgress(domainId: id);
     map[id] = old.copyWith(status: status, updatedAt: DateTime.now());
     await _commit(state.copyWith(journeys: map));
+  }
+
+  Future<void> saveLearningJourneyState(LearningJourneyState value) async {
+    final next = Map<String, LearningJourneyState>.from(state.learningJourneys);
+    next[value.domainId] = value.copyWith(updatedAt: DateTime.now());
+    await _commit(state.copyWith(learningJourneys: next));
   }
 
   Future<void> completePractice(String id) async {

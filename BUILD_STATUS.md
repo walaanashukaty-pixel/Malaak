@@ -1,11 +1,11 @@
 # Build Status — Malaak Flutter Android V6.1 Source
 
 Date: 2026-08-29
-Version: `0.6.1+9`
+Version: `0.6.6+10`
 
 ## Android Release Readiness
 
-The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.1+9` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
+The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.6+10` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
 
 Verified source changes:
 
@@ -54,3 +54,11 @@ Expected outputs after a successful build:
 - `build/app/outputs/bundle/release/app-release.aab`
 
 For Google Play production release, configure protected upload signing / Play App Signing separately. No keystore password, `OPENAI_API_KEY`, or Supabase service-role key belongs in the Android client or repository.
+
+## V6.6 feminine-intelligence trial
+
+- Start Map: 12 scenario questions.
+- Routes: feminine-naivety -> feminine intelligence; masculine-rigidity -> feminine intelligence; advanced Situation Lab.
+- New Dart source contract verification: PASS.
+- Supabase migration `malaak_learning_states_v6`: applied to `puwomvazbzvjmzzmogoj`, RLS enabled.
+- Existing server suite: 68/68 PASS.

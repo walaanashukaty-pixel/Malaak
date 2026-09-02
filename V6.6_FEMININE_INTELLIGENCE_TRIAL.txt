@@ -1,0 +1,17 @@
+Malaak Android V6.6 - Feminine Intelligence Routed Learning Trial
+
+Implemented:
+- Start Map with 12 real-life scenario questions.
+- Hidden scoring across people-pleasing, control/rigidity, practical intelligence, and relational wisdom.
+- Non-diagnostic routing: feminine-naivety, masculine-rigidity, or advanced.
+- 7-step feminine-naivety -> feminine-intelligence journey.
+- 9-step masculine-rigidity -> feminine-intelligence journey.
+- Structured 6-step Situation Lab.
+- Learning-state persistence in AppStateData + Supabase malaak_learning_states table.
+- Supabase RLS enabled and migration applied to puwomvazbzvjmzzmogoj.
+- Premium Malaak design preserved.
+
+Not claimed in this trial:
+- This is not a psychometric diagnostic test.
+- The podcast labels are educational frames, not clinical diagnoses.
+- Open-ended AI coaching does not control routing in this version; the trial keeps learning logic deterministic and reliable.

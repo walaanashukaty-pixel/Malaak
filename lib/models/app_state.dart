@@ -7,6 +7,7 @@ import 'coaching_turn.dart';
 import 'coaching_follow_up.dart';
 import 'initial_map.dart';
 import 'journey_plan.dart';
+import 'learning_journey_state.dart';
 
 class AppStateData {
   AppStateData({
@@ -19,13 +20,15 @@ class AppStateData {
     List<CoachingFollowUp>? pendingFollowUps,
     this.initialMap,
     this.journeyPlan,
+    Map<String, LearningJourneyState>? learningJourneys,
   })  : journals = journals ?? [],
         journeys = journeys ?? {},
         memories = memories ?? [],
         preferences = preferences ?? const UserPreferences(),
         messages = messages ?? [],
         coachingTurns = coachingTurns ?? [],
-        pendingFollowUps = pendingFollowUps ?? [];
+        pendingFollowUps = pendingFollowUps ?? [],
+        learningJourneys = learningJourneys ?? {};
 
   final List<JournalEntry> journals;
   final Map<String, JourneyProgress> journeys;
@@ -36,6 +39,7 @@ class AppStateData {
   final List<CoachingFollowUp> pendingFollowUps;
   final InitialMap? initialMap;
   final JourneyPlan? journeyPlan;
+  final Map<String, LearningJourneyState> learningJourneys;
 
   AppStateData copyWith({
     List<JournalEntry>? journals,
@@ -47,6 +51,7 @@ class AppStateData {
     List<CoachingFollowUp>? pendingFollowUps,
     InitialMap? initialMap,
     JourneyPlan? journeyPlan,
+    Map<String, LearningJourneyState>? learningJourneys,
   }) =>
       AppStateData(
         journals: journals ?? this.journals,
@@ -58,6 +63,7 @@ class AppStateData {
         pendingFollowUps: pendingFollowUps ?? this.pendingFollowUps,
         initialMap: initialMap ?? this.initialMap,
         journeyPlan: journeyPlan ?? this.journeyPlan,
+        learningJourneys: learningJourneys ?? this.learningJourneys,
       );
 
   Map<String, dynamic> toJson() => {
@@ -70,10 +76,12 @@ class AppStateData {
         'pendingFollowUps': pendingFollowUps.map((e) => e.toJson()).toList(),
         'initialMap': initialMap?.toJson(),
         'journeyPlan': journeyPlan?.toJson(),
+        'learningJourneys': learningJourneys.map((key, value) => MapEntry(key, value.toJson())),
       };
 
   factory AppStateData.fromJson(Map<String, dynamic> json) {
     final journeysRaw = Map<String, dynamic>.from(json['journeys'] as Map? ?? const {});
+    final learningRaw = Map<String, dynamic>.from(json['learningJourneys'] as Map? ?? const {});
     return AppStateData(
       journals: (json['journals'] as List? ?? const [])
           .map((e) => JournalEntry.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -101,6 +109,10 @@ class AppStateData {
           ? InitialMap.fromJson(Map<String, dynamic>.from(json['initialMap'] as Map))
           : null,
       journeyPlan: JourneyPlan.tryFromJson(json['journeyPlan']),
+      learningJourneys: {
+        for (final entry in learningRaw.entries)
+          entry.key: LearningJourneyState.fromJson(Map<String, dynamic>.from(entry.value as Map)),
+      },
     );
   }
 }

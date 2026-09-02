@@ -5,6 +5,7 @@ import '../../widgets/premium_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/soft_icon.dart';
 import '../../state/app_scope.dart';
+import '../../features/feminine_intelligence/screens/feminine_intelligence_screen.dart';
 
 class DomainDetailScreen extends StatelessWidget {
   const DomainDetailScreen({super.key, required this.domain});
@@ -12,6 +13,9 @@ class DomainDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (domain.id == 'feminine-intelligence') {
+      return FeminineIntelligenceScreen(domain: domain);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(domain.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),

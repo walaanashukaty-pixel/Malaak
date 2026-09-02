@@ -1,4 +1,20 @@
-MALAAK V6.3 - START HERE
+MALAAK V6.6 - START HERE
+
+WHAT IS NEW
+===========
+- New interactive "بوصلة الذكاء الأنثوي" methodology.
+- 12-scenario Start Map routes the user by current behavior instead of forcing sequential levels.
+- Route 1: from self-abandonment / people pleasing toward feminine intelligence.
+- Route 2: from masculine rigidity / control / urgency toward feminine intelligence.
+- Advanced users are not sent backward; they get a structured Situation Lab.
+- Route progress, lesson completion, notes and assessment answers persist locally and to Supabase.
+- Existing Malaak visual identity and other journey sections are preserved.
+
+SUPABASE
+========
+Target project: walaanashukaty-pixel's Project
+Project ref: puwomvazbzvjmzzmogoj
+Migration malaak_learning_states_v6 has already been applied to the correct project.
 
 SAFE GITHUB UPLOAD
 ==================
@@ -6,14 +22,10 @@ SAFE GITHUB UPLOAD
 2. Double-click UPLOAD_TO_GITHUB.bat.
 3. If GitHub opens a browser sign-in, finish the sign-in.
 4. Wait for the SUCCESS message.
-5. The script opens GitHub Actions automatically so you can watch the Android build.
+5. GitHub Actions opens automatically. Wait for Android Release Build to become green.
+6. Download the artifact named malaak-android-apk and install app-release.apk.
 
 IMPORTANT
 =========
 Do NOT run git init and do NOT use git push --force.
-This V6.3 uploader clones the latest GitHub main branch first, overlays the Malaak files, then commits and pushes safely.
-This fixes the previous fetch-first / non-fast-forward problem.
-
-Supabase target for Malaak:
-walaanashukaty-pixel's Project
-Project ref: puwomvazbzvjmzzmogoj
+The uploader clones the latest GitHub main branch first, overlays V6.6, then commits and pushes safely.

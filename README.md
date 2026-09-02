@@ -1,4 +1,9 @@
-# Malaak Android Release Readiness — Source 0.6.1+9
+# Malaak Android Release Readiness — Source 0.6.6+10
+
+## V6.6 feminine-intelligence trial
+
+The `feminine-intelligence` journey now uses an interactive Start Map instead of the old static domain card. Twelve scenario questions route the user into either a people-pleasing/self-abandonment path, a control/rigidity path, or an advanced Situation Lab. The two implemented routes converge toward the same target: feminine intelligence through timing, distance, emotional awareness, intention and flexible decision-making. Learning progress is persisted locally and in Supabase through the dedicated `malaak_learning_states` table with own-row RLS.
+
 
 The approved V5 coaching/formulation/journey engine is unchanged. This release hardens the Flutter source for a **real Android build** while preserving the same Figma-derived mobile visual language and Arabic RTL experience.
 
