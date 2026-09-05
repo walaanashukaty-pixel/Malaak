@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/app_catalog.dart';
+import '../../features/feminine_intelligence/data/fi_catalog.dart';
+import '../../features/feminine_intelligence/logic/fi_progression.dart';
+import '../../features/feminine_intelligence/screens/fi_route_screen.dart';
+import '../../models/learning_journey_state.dart';
 import '../../models/journey_domain.dart';
 import '../../models/journey_plan.dart';
 import '../../screens/journey/domain_detail_screen.dart';
@@ -41,6 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final quickTools = AppCatalog.quickTools.take(6).toList();
     final app = AppScope.of(context);
+    final fiLearning = app.state.learningJourneys[FiCatalog.domainId] ??
+        const LearningJourneyState(domainId: FiCatalog.domainId);
+    final fiRoute = fiLearning.routeId == null ? null : FiCatalog.routeById(fiLearning.routeId!);
     final journeyPlan = app.state.journeyPlan;
     final primaryDomain = _journeyDomainOrNull(journeyPlan?.primaryDomain);
     final supportDomain = _journeyDomainOrNull(journeyPlan?.supportDomain);
@@ -116,12 +123,15 @@ class _HomeScreenState extends State<HomeScreen> {
             trailing: TextButton(onPressed: widget.onOpenJourney, child: const Text('كل الرحلة')),
           ),
           const SizedBox(height: 12),
-          _HomeJourneyCard(
-            plan: journeyPlan,
-            primary: primaryDomain,
-            support: supportDomain,
-            onOpenJourney: widget.onOpenJourney,
-          ),
+          if (fiRoute != null)
+            _FiHomeJourneyCard(state: fiLearning)
+          else
+            _HomeJourneyCard(
+              plan: journeyPlan,
+              primary: primaryDomain,
+              support: supportDomain,
+              onOpenJourney: widget.onOpenJourney,
+            ),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -170,6 +180,90 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _FiHomeJourneyCard extends StatelessWidget {
+  const _FiHomeJourneyCard({required this.state});
+
+  final LearningJourneyState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final route = FiCatalog.routeById(state.routeId!);
+    final currentIndex = FiProgression.currentNodeIndex(lessons: route.lessons, state: state);
+    final mastered = <FiNodeStatus>[
+      for (var i = 0; i < route.lessons.length; i++)
+        FiProgression.nodeStatus(index: i, lessons: route.lessons, state: state),
+    ].where((status) => status == FiNodeStatus.mastered).length;
+    final applications = route.lessons
+        .map((lesson) => state.lessonProgress[lesson.id]?.realLifeApplications ?? 0)
+        .fold<int>(0, (total, value) => total + value);
+    final currentTitle = currentIndex >= 0 && currentIndex < route.lessons.length
+        ? route.lessons[currentIndex].title
+        : 'المسار المتقدم';
+    return PremiumCard(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => FiRouteScreen(routeId: route.id)),
+      ),
+      borderColor: AppColors.lilac,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('رحلتك الحالية • Skill Tree', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.rose)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const SoftIcon(icon: Icons.route_rounded, color: AppColors.lilac, size: 48),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(route.title, style: const TextStyle(fontSize: 15.5, height: 1.4, fontWeight: FontWeight.w900, color: AppColors.plum)),
+                    const SizedBox(height: 4),
+                    Text('الخطوة الحالية: $currentTitle', style: const TextStyle(fontSize: 10.8, height: 1.55, color: AppColors.softText)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_left_rounded, color: AppColors.lavender),
+            ],
+          ),
+          const SizedBox(height: 13),
+          Row(
+            children: [
+              Expanded(child: _FiHomeMetric(value: '$mastered/${route.lessons.length}', label: 'مهارات مكتسبة')),
+              const SizedBox(width: 8),
+              Expanded(child: _FiHomeMetric(value: '$applications', label: 'تطبيقات حقيقية')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            FiProgression.nextUnlockReason(lessons: route.lessons, state: state),
+            style: const TextStyle(fontSize: 10.5, height: 1.6, color: AppColors.mutedText, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FiHomeMetric extends StatelessWidget {
+  const _FiHomeMetric({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(color: AppColors.muted.withOpacity(0.65), borderRadius: BorderRadius.circular(14)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: AppColors.plum)),
+            Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.mutedText)),
+          ],
+        ),
+      );
 }
 
 class _HomeJourneyCard extends StatelessWidget {

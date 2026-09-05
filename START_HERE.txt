@@ -1,21 +1,23 @@
-MALAAK V6.7 - START HERE
+MALAAK V6.8 - START HERE
 
 WHAT IS NEW
 ===========
-- "بوصلة الذكاء الأنثوي" assessment now feels like a conversation with Malaak.
-- Choosing an answer does NOT move automatically. Use السابق / التالي and edit earlier answers anytime before the result.
-- After assessment, all four models are shown. Malaak recommends one route, but the user chooses.
-- No mixed answer set ends with "you do not need anything".
-- Four working routes: feminine naivety, masculine rigidity, masculine intelligence, feminine intelligence deepening.
-- Training is no longer one question + "completed". Each session has discovery, reflection, a scenario, feedback/retry, a real-life mission and follow-up.
-- Progress measures training sessions and real-life applications separately.
-- Other Malaak sections and the premium visual identity are preserved.
+- The active feminine-intelligence route is now a real Skill Tree: only the current node is actionable and future nodes are visibly locked.
+- Finishing an in-app session assigns a real-life mission; it does NOT unlock the next main node.
+- Main follow-up opens after a configurable delay; V6.8 defaults to 18 hours.
+- While waiting, the user still gets an immediate optional mini-practice and Situation Lab access.
+- A successful real-life follow-up marks the node mastered and unlocks the next node.
+- "ما إجتني فرصة" opens a substitute simulation instead of punishing/resetting progress.
+- difficult / old-pattern / forgot outcomes go through repair/retry instead of false mastery.
+- When a base route is mastered, a new advanced chapter opens instead of ending the app.
+- Home prioritizes the active Skill Tree. Other Malaak domains remain visible in the life map but are locked instead of exposing every legacy short flow at once.
+- Assessment remains conversational with السابق / التالي and user-controlled route choice after Malaak's recommendation.
 
 SUPABASE
 ========
 Target project: walaanashukaty-pixel's Project
 Project ref: puwomvazbzvjmzzmogoj
-Existing malaak_learning_states persistence is reused. No new DB table is required for V6.7.
+Existing malaak_learning_states persistence is reused. No new DB table is required for V6.8.
 
 SAFE GITHUB UPLOAD
 ==================
@@ -29,4 +31,4 @@ SAFE GITHUB UPLOAD
 IMPORTANT
 =========
 Do NOT run git init and do NOT use git push --force.
-The uploader clones the latest GitHub main branch first, overlays V6.7, then commits and pushes safely.
+The uploader clones the latest GitHub main branch first, overlays V6.8, then commits and pushes safely.

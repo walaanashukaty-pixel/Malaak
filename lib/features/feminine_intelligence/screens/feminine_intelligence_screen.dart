@@ -8,6 +8,7 @@ import '../../../widgets/premium_card.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/soft_icon.dart';
 import '../data/fi_catalog.dart';
+import '../logic/fi_progression.dart';
 import 'fi_assessment_result_screen.dart';
 import 'fi_assessment_screen.dart';
 import 'fi_route_screen.dart';
@@ -190,9 +191,12 @@ class _RouteProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final route = FiCatalog.routeById(state.routeId ?? FiCatalog.feminineNaivetyRoute.id);
     final progressEntries = route.lessons.map((lesson) => state.lessonProgress[lesson.id]).whereType<LearningLessonProgress>().toList();
-    final practiced = progressEntries.where((progress) => progress.hasStarted).length;
+    final mastered = <FiNodeStatus>[
+      for (var i = 0; i < route.lessons.length; i++)
+        FiProgression.nodeStatus(index: i, lessons: route.lessons, state: state),
+    ].where((status) => status == FiNodeStatus.mastered).length;
     final applied = progressEntries.fold<int>(0, (total, progress) => total + progress.realLifeApplications);
-    final progress = route.lessons.isEmpty ? 0.0 : practiced / route.lessons.length;
+    final progress = route.lessons.isEmpty ? 0.0 : mastered / route.lessons.length;
     return PremiumCard(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FiRouteScreen(routeId: route.id))),
       child: Column(
@@ -219,7 +223,7 @@ class _RouteProgressCard extends StatelessWidget {
           const SizedBox(height: 11),
           Row(
             children: [
-              Expanded(child: _MiniMetric(label: 'جلسات تدريب', value: '$practiced/${route.lessons.length}')),
+              Expanded(child: _MiniMetric(label: 'مهارات مكتسبة', value: '$mastered/${route.lessons.length}')),
               const SizedBox(width: 8),
               Expanded(child: _MiniMetric(label: 'تطبيقات حقيقية', value: '$applied')),
             ],

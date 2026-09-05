@@ -1,0 +1,11 @@
+Malaak V6.8 — Skill Tree & Retention
+
+- Main journey nodes are locked and unlock only through demonstrated progress.
+- Session completion assigns a real-life mission instead of completing the skill.
+- Follow-up default window is 18 hours (configurable in FiProgression.followUpDelay).
+- While waiting, an optional mini-practice remains available immediately.
+- Successful real-life follow-up masters the node and unlocks the next node.
+- No-chance outcomes use a substitute simulation; old-pattern/difficult/forgot outcomes use repair/retry.
+- Home prioritizes the active skill-tree journey.
+- Journey map keeps other domains visible but locked instead of exposing every short legacy flow.
+- Existing Supabase malaak_learning_states JSON persistence stores the expanded timing/mastery evidence fields.

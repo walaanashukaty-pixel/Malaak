@@ -5,6 +5,7 @@ import '../../../models/learning_journey_state.dart';
 import '../../../state/app_scope.dart';
 import '../../../widgets/premium_card.dart';
 import '../data/fi_catalog.dart';
+import '../logic/fi_progression.dart';
 import '../models/fi_models.dart';
 
 class FiLessonScreen extends StatefulWidget {
@@ -21,10 +22,15 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
   final _reflectionController = TextEditingController();
   String? _selectedChoice;
   String? _scenarioChoiceId;
+  String? _optionalChoiceId;
+  String? _retryChoiceId;
+  String? _substituteChoiceId;
   int _sessionStep = 0;
   int _attempts = 0;
   bool _loaded = false;
   bool _saving = false;
+  bool _retryShowFeedback = false;
+  bool _substituteShowFeedback = false;
   late LearningLessonProgress _initialProgress;
 
   @override
@@ -34,6 +40,7 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
     final journey = AppScope.of(context).state.learningJourneys[FiCatalog.domainId];
     _initialProgress = journey?.lessonProgress[widget.lesson.id] ?? const LearningLessonProgress();
     _selectedChoice = _initialProgress.selectedChoice;
+    _scenarioChoiceId = _initialProgress.scenarioChoice;
     _reflectionController.text = _initialProgress.reflection ?? '';
     _attempts = _initialProgress.attempts;
     _loaded = true;
@@ -70,14 +77,15 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
     ];
   }
 
-  FiScenarioOption? get _selectedScenario {
-    final id = _scenarioChoiceId;
+  FiScenarioOption? _scenarioById(String? id) {
     if (id == null) return null;
     for (final option in _scenarioOptions) {
       if (option.id == id) return option;
     }
     return null;
   }
+
+  FiScenarioOption? get _selectedScenario => _scenarioById(_scenarioChoiceId);
 
   bool get _canContinue {
     if (_sessionStep == 1) {
@@ -122,6 +130,8 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
         const LearningJourneyState(domainId: FiCatalog.domainId);
     final progress = Map<String, LearningLessonProgress>.from(old.lessonProgress);
     final previous = progress[widget.lesson.id] ?? _initialProgress;
+    final assignedAt = DateTime.now();
+    final followUpAvailableAt = assignedAt.add(FiProgression.followUpDelay);
     progress[widget.lesson.id] = previous.copyWith(
       stage: 'missionPending',
       sessionStep: 6,
@@ -130,13 +140,16 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
       scenarioChoice: _scenarioChoiceId,
       reflection: _reflectionController.text.trim(),
       mission: widget.lesson.practice,
-      updatedAt: DateTime.now(),
+      lastOutcome: 'missionAssigned',
+      missionAssignedAt: assignedAt,
+      followUpAvailableAt: followUpAvailableAt,
+      updatedAt: assignedAt,
     );
     await app.saveLearningJourneyState(old.copyWith(lessonProgress: progress));
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('حفظتلك المهمة 🌱 المرة الجاية منرجع نشوف شو صار بالحياة الحقيقية.')),
+      const SnackBar(content: Text('مهمتك صارت بالحياة 🌱 التمرين الإضافي متاح فورًا، والمتابعة الأساسية بتفتح لاحقًا.')),
     );
     Navigator.of(context).pop();
   }
@@ -149,15 +162,51 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
         const LearningJourneyState(domainId: FiCatalog.domainId);
     final progress = Map<String, LearningLessonProgress>.from(old.lessonProgress);
     final previous = progress[widget.lesson.id] ?? _initialProgress;
-    final tried = outcome == 'success' || outcome == 'difficult' || outcome == 'oldPattern';
-    progress[widget.lesson.id] = previous.copyWith(
-      stage: tried ? 'applied' : 'missionPending',
-      realLifeApplications: previous.realLifeApplications + (tried ? 1 : 0),
-      lastOutcome: outcome,
-      updatedAt: DateTime.now(),
-    );
+    final now = DateTime.now();
     final completed = <String>{...old.completedLessonIds};
-    if (tried) completed.add(widget.lesson.id);
+
+    late LearningLessonProgress next;
+    switch (outcome) {
+      case 'success':
+        next = previous.copyWith(
+          stage: 'mastered',
+          realLifeApplications: previous.realLifeApplications + 1,
+          lastOutcome: outcome,
+          followUpCompletedAt: now,
+          masteryEvidence: <String>{...previous.masteryEvidence, 'realLife:success'}.toList(growable: false),
+          updatedAt: now,
+        );
+        completed.add(widget.lesson.id);
+        break;
+      case 'difficult':
+      case 'oldPattern':
+        next = previous.copyWith(
+          stage: 'retryRequired',
+          realLifeApplications: previous.realLifeApplications + 1,
+          lastOutcome: outcome,
+          followUpCompletedAt: now,
+          updatedAt: now,
+        );
+        break;
+      case 'noChance':
+        next = previous.copyWith(
+          stage: 'substituteSimulation',
+          lastOutcome: outcome,
+          followUpCompletedAt: now,
+          updatedAt: now,
+        );
+        break;
+      case 'forgot':
+      default:
+        next = previous.copyWith(
+          stage: 'retryRequired',
+          lastOutcome: outcome,
+          followUpCompletedAt: now,
+          updatedAt: now,
+        );
+        break;
+    }
+    progress[widget.lesson.id] = next;
     await app.saveLearningJourneyState(old.copyWith(
       lessonProgress: progress,
       completedLessonIds: completed.toList(growable: false),
@@ -165,20 +214,128 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     final message = switch (outcome) {
-      'success' => 'ممتاز. اللي بهمنا مو الكمال؛ بهمنا إنك استخدمتي المهارة فعلًا بالحياة ✨',
-      'difficult' => 'المحاولة الصعبة محسوبة. هاد دليل تطبيق، وهلأ منعرف وين بدنا نقوّي التدريب.',
-      'oldPattern' => 'حتى رجوعك للنمط القديم معلومة مهمة. الفرق إنك هلق لاحظتيه، ومنقدر نتمرن عليه بدل ما يمر بدون وعي.',
-      'noChance' => 'تمام، ما رح نعتبرها ناقصة. منخلي المهمة مفتوحة لحد ما يجي موقف مناسب.',
-      _ => 'ولا يهمك. منخلي المهمة موجودة ونرجع نجربها بأول فرصة مناسبة.',
+      'success' => 'هاي المرة عندنا دليل حقيقي ✨ المهارة انحسبت مكتسبة وفتحت الخطوة التالية.',
+      'difficult' => 'المحاولة محسوبة، بس ما رح نفتّح المرحلة التالية لسه. عندك تمرين إصلاح صغير أولًا.',
+      'oldPattern' => 'ممتاز إنك لاحظتي الرجوع للنمط القديم. هلق منعمل Retry صغير بدل ما نعتبرها إنجاز بالغلط.',
+      'noChance' => 'تمام، ما رح نعاقبك. فتحتلك محاكاة بديلة قوية حتى تثبتي المهارة داخل التطبيق.',
+      _ => 'ولا يهمك. رح نعمل خطوة تذكير وإصلاح، وبعدها نرجع نجربها بالحياة.',
     };
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     Navigator.of(context).pop();
   }
 
+  Future<void> _completeSubstituteSimulation() async {
+    if (_saving || _substituteChoiceId == null) return;
+    final selected = _scenarioById(_substituteChoiceId);
+    if ((selected?.skillLevel ?? 0) < 2) {
+      setState(() {
+        _substituteShowFeedback = true;
+        _attempts += 1;
+      });
+      return;
+    }
+    setState(() => _saving = true);
+    final app = AppScope.of(context);
+    final old = app.state.learningJourneys[FiCatalog.domainId] ??
+        const LearningJourneyState(domainId: FiCatalog.domainId);
+    final progress = Map<String, LearningLessonProgress>.from(old.lessonProgress);
+    final previous = progress[widget.lesson.id] ?? _initialProgress;
+    final now = DateTime.now();
+    progress[widget.lesson.id] = previous.copyWith(
+      stage: 'mastered',
+      attempts: previous.attempts + _attempts + 1,
+      lastOutcome: 'substituteSimulationSuccess',
+      masteryEvidence: <String>{...previous.masteryEvidence, 'substituteSimulation:success'}.toList(growable: false),
+      updatedAt: now,
+    );
+    final completed = <String>{...old.completedLessonIds, widget.lesson.id};
+    await app.saveLearningJourneyState(old.copyWith(
+      lessonProgress: progress,
+      completedLessonIds: completed.toList(growable: false),
+    ));
+    if (!mounted) return;
+    setState(() => _saving = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('نجحتِ بالمحاكاة البديلة ✨ هلق صار في دليل كافي لفتح الخطوة التالية.')),
+    );
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _completeRetry() async {
+    if (_saving || _retryChoiceId == null) return;
+    final selected = _scenarioById(_retryChoiceId);
+    if ((selected?.skillLevel ?? 0) < 2) {
+      setState(() {
+        _retryShowFeedback = true;
+        _attempts += 1;
+      });
+      return;
+    }
+    setState(() => _saving = true);
+    final app = AppScope.of(context);
+    final old = app.state.learningJourneys[FiCatalog.domainId] ??
+        const LearningJourneyState(domainId: FiCatalog.domainId);
+    final progress = Map<String, LearningLessonProgress>.from(old.lessonProgress);
+    final previous = progress[widget.lesson.id] ?? _initialProgress;
+    final now = DateTime.now();
+    final forgot = previous.lastOutcome == 'forgot';
+    final completed = <String>{...old.completedLessonIds};
+    if (forgot) {
+      final followUpAvailableAt = now.add(FiProgression.followUpDelay);
+      progress[widget.lesson.id] = previous.copyWith(
+        stage: 'missionPending',
+        attempts: previous.attempts + _attempts + 1,
+        lastOutcome: 'retryPassedMissionReassigned',
+        missionAssignedAt: now,
+        followUpAvailableAt: followUpAvailableAt,
+        updatedAt: now,
+      );
+    } else {
+      progress[widget.lesson.id] = previous.copyWith(
+        stage: 'mastered',
+        attempts: previous.attempts + _attempts + 1,
+        lastOutcome: 'retryPassed',
+        masteryEvidence: <String>{...previous.masteryEvidence, 'repairSimulation:success'}.toList(growable: false),
+        updatedAt: now,
+      );
+      completed.add(widget.lesson.id);
+    }
+    await app.saveLearningJourneyState(old.copyWith(
+      lessonProgress: progress,
+      completedLessonIds: completed.toList(growable: false),
+    ));
+    if (!mounted) return;
+    setState(() => _saving = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(forgot
+          ? 'حلو. التذكير صار جاهز، وهلق منرجع نجرب المهمة بالحياة قبل ما تنفتح المرحلة التالية.'
+          : 'نجح تمرين الإصلاح ✨ عندك تطبيق حقيقي + Retry ناجح، ففتحت الخطوة التالية.')),
+    );
+    Navigator.of(context).pop();
+  }
+
+  String _followUpTimeText() {
+    final at = _initialProgress.followUpAvailableAt;
+    if (at == null) return 'المتابعة بتفتح لاحقًا.';
+    final diff = at.difference(DateTime.now());
+    if (diff.isNegative || diff.inMinutes <= 0) return 'المتابعة جاهزة هلق.';
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes.remainder(60);
+    if (hours <= 0) return 'المتابعة بتفتح بعد حوالي $minutes دقيقة.';
+    if (minutes == 0) return 'المتابعة بتفتح بعد حوالي $hours ساعة.';
+    return 'المتابعة بتفتح بعد حوالي $hours ساعة و$minutes دقيقة.';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_initialProgress.missionPending) return _buildFollowUp(context);
+    if (_initialProgress.mastered) return _buildMastered(context);
+    if (_initialProgress.substituteSimulationPending) return _buildSubstituteSimulation(context);
+    if (_initialProgress.retryRequired) return _buildRetry(context);
+    if (_initialProgress.missionPending) {
+      if (FiProgression.isFollowUpReady(_initialProgress)) return _buildFollowUp(context);
+      return _buildMissionWaiting(context);
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.lesson.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
@@ -240,10 +397,6 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
           _CoachBubble(text: 'اليوم ما رح نقرأ درس ونحط صح عليه. رح نفهم ${widget.lesson.title} على موقف من حياتك، نتدرب، وبعدين أعطيكي مهمة صغيرة نجربها برا التطبيق.'),
           const SizedBox(height: 12),
           _CoachBubble(text: widget.lesson.insight),
-          if (_initialProgress.realLifeApplications > 0) ...[
-            const SizedBox(height: 12),
-            _CoachBubble(text: 'إنتِ طبقتي هالمهارة بالحياة ${_initialProgress.realLifeApplications} مرة. هالجلسة تقوية، مو إعادة من الصفر.'),
-          ],
         ];
       case 1:
         return [
@@ -276,7 +429,7 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
           if (answer.isNotEmpty) const SizedBox(height: 10),
           _CoachBubble(text: _choiceReflection()),
           const SizedBox(height: 12),
-          _CoachBubble(text: 'هلق خلينا ما نكتفي بالفهم. بدي حطك بموقف صغير ونشوف شو بتختاري لما يصير الضغط.'),
+          const _CoachBubble(text: 'هلق خلينا ما نكتفي بالفهم. بدي حطك بموقف صغير ونشوف شو بتختاري لما يصير الضغط.'),
         ];
       case 3:
         return [
@@ -305,7 +458,7 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
             ),
           ] else ...[
             const SizedBox(height: 12),
-            _CoachBubble(text: 'تمام. هلق بدنا ننقل المهارة من السيناريو لحياتك إنتِ، بكلماتك إنتِ.'),
+            const _CoachBubble(text: 'تمام. هلق بدنا ننقل المهارة من السيناريو لحياتك إنتِ، بكلماتك إنتِ.'),
           ],
         ];
       case 5:
@@ -335,12 +488,65 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
                 const SizedBox(height: 7),
                 Text(widget.lesson.practice, style: const TextStyle(fontSize: 12, height: 1.75, color: AppColors.softText)),
                 const SizedBox(height: 10),
-                const Text('ما رح نحسب المهارة منجزة الآن. لما ترجعي، ملاك رح تسألك شو صار فعلًا.', style: TextStyle(fontSize: 10.5, height: 1.6, fontWeight: FontWeight.w700, color: AppColors.mutedText)),
+                const Text('بعد ما تحفظي المهمة رح يضل عندك تمرين إضافي فوري، لكن المرحلة الأساسية التالية بتضل مقفولة لحد المتابعة.', style: TextStyle(fontSize: 10.5, height: 1.6, fontWeight: FontWeight.w700, color: AppColors.mutedText)),
               ],
             ),
           ),
         ];
     }
+  }
+
+  Widget _buildMissionWaiting(BuildContext context) {
+    final optional = _scenarioById(_optionalChoiceId);
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.lesson.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 36),
+        children: [
+          const _CoachBubble(text: 'هلق دور الحياة، مو دور شاشة جديدة. المرحلة اللي بعدها مقفولة لحد ما نرجع نراجع التجربة سوا.'),
+          const SizedBox(height: 12),
+          PremiumCard(
+            color: AppColors.sage.withOpacity(0.10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('مهمتك الحالية 🌱', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: AppColors.plum)),
+                const SizedBox(height: 6),
+                Text(_initialProgress.mission ?? widget.lesson.practice, style: const TextStyle(fontSize: 11.8, height: 1.7, color: AppColors.softText)),
+                const SizedBox(height: 10),
+                Text(_followUpTimeText(), style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.gold)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          const _CoachBubble(text: 'بس ما بدي أتركك ناطرة. عندك تدريب إضافي فوري ما بيفتح المرحلة التالية، بس بيقوّي نفس المهارة.'),
+          const SizedBox(height: 12),
+          PremiumCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('تمرين إضافي • دقيقة واحدة', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.lilac)),
+                const SizedBox(height: 7),
+                Text(widget.lesson.scenarioPrompt ?? 'لو ظهر نفس الموقف هلق، شو أقرب تصرف بيعطيكي مساحة تستخدمّي المهارة بدل النمط القديم؟', style: const TextStyle(fontSize: 11.8, height: 1.65, color: AppColors.plum, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final option in _scenarioOptions) ...[
+            _ChoiceCard(
+              label: option.label,
+              selected: _optionalChoiceId == option.id,
+              onTap: () => setState(() => _optionalChoiceId = option.id),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (optional != null) ...[
+            const SizedBox(height: 4),
+            _CoachBubble(text: optional.feedback),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildFollowUp(BuildContext context) {
@@ -350,7 +556,7 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 36),
         children: [
-          const _CoachBubble(text: 'أهلين 🌷 المرة الماضية ما سكّرنا التدريب بزر "أنجزت". اتفقنا نجربه بالحياة الحقيقية.'),
+          const _CoachBubble(text: 'أهلين 🌷 هلق المتابعة جاهزة. ما رح نفتح الخطوة الجاية لمجرد إن الوقت مر؛ بدي أعرف شو صار فعلًا.'),
           const SizedBox(height: 12),
           PremiumCard(
             color: AppColors.sage.withOpacity(0.10),
@@ -379,6 +585,111 @@ class _FiLessonScreenState extends State<FiLessonScreen> {
             const SizedBox(height: 14),
             const Center(child: CircularProgressIndicator()),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubstituteSimulation(BuildContext context) {
+    final selected = _scenarioById(_substituteChoiceId);
+    return Scaffold(
+      appBar: AppBar(title: const Text('محاكاة بديلة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 36),
+        children: [
+          const _CoachBubble(text: 'بما إن ما إجت فرصة بالحياة، ما رح نوقف رحلتك. بس كمان ما رح نكبس "تم". رح نعمل محاكاة أقوى كدليل بديل.'),
+          const SizedBox(height: 12),
+          _Scenario(
+            title: widget.lesson.scenarioPrompt ?? 'تخيلي الموقف صار هلق وبضغط أعلى. شو الاستجابة اللي بتطبق مهارة اليوم فعلًا؟',
+            options: _scenarioOptions,
+            selectedId: _substituteChoiceId,
+            onSelect: (id) => setState(() {
+              _substituteChoiceId = id;
+              _substituteShowFeedback = false;
+            }),
+          ),
+          if (_substituteShowFeedback && selected != null) ...[
+            const SizedBox(height: 10),
+            _CoachBubble(text: '${selected.feedback}\n\nخلينا نعيدها مرة تانية. بدي اختيار يطبق المهارة بشكل واضح، مو مجرد هروب من الموقف.'),
+          ],
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _substituteChoiceId == null || _saving ? null : _completeSubstituteSimulation,
+            child: _saving
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('ثبتي الاستجابة'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRetry(BuildContext context) {
+    final selected = _scenarioById(_retryChoiceId);
+    final forgot = _initialProgress.lastOutcome == 'forgot';
+    return Scaffold(
+      appBar: AppBar(title: const Text('محاولة إصلاح', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 36),
+        children: [
+          _CoachBubble(text: forgot
+              ? 'نسيان المهمة ما يعني فشل. بس قبل ما نرجع نرسلها للحياة، بدي نعمل Retry قصير يخلي الإشارة أوضح ببالك.'
+              : 'إنتِ حاولتي بالحياة، وهاد مهم. بما إن النتيجة كانت صعبة أو رجع النمط القديم، منعمل Retry صغير بدل ما نفتح الخطوة التالية بالغلط.'),
+          const SizedBox(height: 12),
+          _Scenario(
+            title: 'لو رجع نفس الضغط هلق، أي خيار بيحافظ على مهارة «${widget.lesson.title}» بشكل أوضح؟',
+            options: _scenarioOptions,
+            selectedId: _retryChoiceId,
+            onSelect: (id) => setState(() {
+              _retryChoiceId = id;
+              _retryShowFeedback = false;
+            }),
+          ),
+          if (_retryShowFeedback && selected != null) ...[
+            const SizedBox(height: 10),
+            _CoachBubble(text: '${selected.feedback}\n\nمو مشكلة. جرّبي مرة ثانية قبل ما نعتبر الـRetry ناجح.'),
+          ],
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _retryChoiceId == null || _saving ? null : _completeRetry,
+            child: _saving
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(forgot ? 'جهزيني للمهمة من جديد' : 'ثبتي الـRetry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMastered(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.lesson.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 36),
+        children: [
+          const _CoachBubble(text: 'هاي المهارة صارت عندها دليل، مو مجرد علامة صح. لذلك المرحلة التالية صارت مفتوحة 🌷'),
+          const SizedBox(height: 12),
+          PremiumCard(
+            color: AppColors.sage.withOpacity(0.10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('مهارة مكتسبة ✨', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.plum)),
+                const SizedBox(height: 8),
+                Text('تطبيقات حقيقية: ${_initialProgress.realLifeApplications}', style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.softText)),
+                const SizedBox(height: 4),
+                Text('أدلة التقدم: ${_initialProgress.masteryEvidence.length}', style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AppColors.softText)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          const _CoachBubble(text: 'ما لازم تعيدي الدرس من الصفر. ارجعي للخريطة وخدي الخطوة الجديدة، أو استخدمي مختبر المواقف إذا عندك حدث حقيقي.'),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.route_rounded, size: 18),
+            label: const Text('ارجعي للخريطة'),
+          ),
         ],
       ),
     );

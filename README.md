@@ -1,12 +1,15 @@
-# Malaak Android Release Readiness — Source 0.6.7+11
+# Malaak Android Release Readiness — Source 0.6.8+12
 
-## V6.7 conversational feminine-intelligence training
+## V6.8 skill-tree feminine-intelligence training
 
-The `feminine-intelligence` domain now behaves like a guided conversation instead of a questionnaire and one-click lesson list. Assessment answers no longer auto-advance; users explicitly move with **السابق / التالي**, can edit earlier answers, and see their answer as a chat bubble with a short Malaak reflection.
+V6.8 converts the authored feminine-intelligence routes from an open lesson list into a locked **Skill Tree**. Future nodes stay visible but cannot be opened early. Completing a chat session assigns a real-life mission rather than mastery; the next main node remains locked until the user returns for follow-up.
 
-After assessment, all four educational models are shown: feminine naivety, masculine rigidity, masculine intelligence, and feminine intelligence. Malaak highlights one **recommended starting route**, but the user can choose any route. Mixed answers never end in a "you need nothing" state.
+The follow-up window is configurable through `FiProgression.followUpDelay` and defaults to **18 hours** in this release. While waiting, the user still has an immediate optional mini-practice and Situation Lab access. Successful real-life follow-up marks the node mastered. "ما إجتني فرصة" opens a substitute simulation, while difficult / old-pattern / forgotten attempts enter a repair/retry flow instead of falsely unlocking progress.
 
-Training sessions now use multiple interactions: discovery, coach reflection, a simulated scenario, feedback/retry, personal reflection, a real-life mission, and a later follow-up. In-app practice creates a pending mission rather than instant mastery. Route progress separates **جلسات تدريب** from **تطبيقات حقيقية** and pending follow-ups. Existing Supabase `malaak_learning_states` JSON persistence stores the richer progress without a new table migration. All other Malaak domains remain intact.
+When a base route is fully mastered, Malaak opens a **new advanced chapter** (feminine-intelligence deepening) instead of ending the app. Home prioritizes the active Skill Tree, while the wider Journey map keeps all Malaak domains visible but locks unauthored/non-active flows rather than exposing every short legacy lesson at once. Existing Supabase `malaak_learning_states` JSON persistence stores mission timing and mastery evidence without a new database table.
+
+Assessment remains conversational: answer selection does not auto-advance, **السابق / التالي** are explicit, all four educational models are shown, Malaak recommends one starting route, and the user chooses.
+
 
 ## V6.6 feminine-intelligence trial
 

@@ -1,11 +1,11 @@
 # Build Status — Malaak Flutter Android V6.1 Source
 
 Date: 2026-08-29
-Version: `0.6.7+11`
+Version: `0.6.8+12`
 
 ## Android Release Readiness
 
-The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.7+11` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
+The approved V5A/V5B/V5C behavior engine remains intact. Version `0.6.8+12` keeps the Android hardening and adds a pinned Flutter toolchain, Android Doctor checks, and Dart source-integrity verification without changing the approved Figma-derived mobile style.
 
 Verified source changes:
 
@@ -56,7 +56,7 @@ Expected outputs after a successful build:
 For Google Play production release, configure protected upload signing / Play App Signing separately. No keystore password, `OPENAI_API_KEY`, or Supabase service-role key belongs in the Android client or repository.
 
 
-## V6.7 conversational training
+## V6.8 skill-tree retention
 
 - Assessment is chat-style with explicit previous/next navigation; answer taps do not auto-advance.
 - All four educational models are displayed after assessment; Malaak recommends, the user chooses.

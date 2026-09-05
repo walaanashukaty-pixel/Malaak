@@ -1,0 +1,14 @@
+Malaak V6.8.1 - REAL Skill Tree Upload Fix
+
+Why this release exists:
+- GitHub run #10 was labeled V6.8 but its commit changed only UPLOAD_TO_GITHUB.bat.
+- Therefore the generated APK still contained the older V6.7 route/training UI.
+
+This package contains the actual V6.8 Skill Tree source and a guarded uploader.
+The uploader refuses to push unless these source markers are present and staged:
+- fi_progression.dart / FiNodeStatus
+- fi_route_screen.dart / locked nodes
+- fi_lesson_screen.dart / timed real-life follow-up
+- pubspec version 0.6.8+13
+
+Important: extract the ENTIRE ZIP to a new empty folder and run UPLOAD_TO_GITHUB.bat from that folder.

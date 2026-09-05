@@ -9,6 +9,10 @@ class LearningLessonProgress {
     this.reflection,
     this.mission,
     this.lastOutcome,
+    this.missionAssignedAt,
+    this.followUpAvailableAt,
+    this.followUpCompletedAt,
+    this.masteryEvidence = const <String>[],
     this.updatedAt,
   });
 
@@ -21,11 +25,21 @@ class LearningLessonProgress {
   final String? reflection;
   final String? mission;
   final String? lastOutcome;
+  final DateTime? missionAssignedAt;
+  final DateTime? followUpAvailableAt;
+  final DateTime? followUpCompletedAt;
+  final List<String> masteryEvidence;
   final DateTime? updatedAt;
 
   bool get hasStarted => stage != 'notStarted';
   bool get missionPending => stage == 'missionPending';
-  bool get applied => stage == 'applied' || realLifeApplications > 0;
+  bool get followUpReady => missionPending &&
+      followUpAvailableAt != null &&
+      !DateTime.now().isBefore(followUpAvailableAt!);
+  bool get mastered => stage == 'mastered';
+  bool get retryRequired => stage == 'retryRequired';
+  bool get substituteSimulationPending => stage == 'substituteSimulation';
+  bool get applied => mastered || realLifeApplications > 0;
 
   LearningLessonProgress copyWith({
     String? stage,
@@ -37,6 +51,10 @@ class LearningLessonProgress {
     String? reflection,
     String? mission,
     String? lastOutcome,
+    DateTime? missionAssignedAt,
+    DateTime? followUpAvailableAt,
+    DateTime? followUpCompletedAt,
+    List<String>? masteryEvidence,
     DateTime? updatedAt,
   }) {
     return LearningLessonProgress(
@@ -49,6 +67,10 @@ class LearningLessonProgress {
       reflection: reflection ?? this.reflection,
       mission: mission ?? this.mission,
       lastOutcome: lastOutcome ?? this.lastOutcome,
+      missionAssignedAt: missionAssignedAt ?? this.missionAssignedAt,
+      followUpAvailableAt: followUpAvailableAt ?? this.followUpAvailableAt,
+      followUpCompletedAt: followUpCompletedAt ?? this.followUpCompletedAt,
+      masteryEvidence: masteryEvidence ?? this.masteryEvidence,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -63,6 +85,10 @@ class LearningLessonProgress {
         'reflection': reflection,
         'mission': mission,
         'lastOutcome': lastOutcome,
+        'missionAssignedAt': missionAssignedAt?.toIso8601String(),
+        'followUpAvailableAt': followUpAvailableAt?.toIso8601String(),
+        'followUpCompletedAt': followUpCompletedAt?.toIso8601String(),
+        'masteryEvidence': masteryEvidence,
         'updatedAt': updatedAt?.toIso8601String(),
       };
 
@@ -79,8 +105,20 @@ class LearningLessonProgress {
       reflection: _cleanNullable(json['reflection']),
       mission: _cleanNullable(json['mission']),
       lastOutcome: _cleanNullable(json['lastOutcome']),
-      updatedAt: json['updatedAt'] == null ? null : DateTime.tryParse(json['updatedAt'].toString()),
+      missionAssignedAt: _date(json['missionAssignedAt']),
+      followUpAvailableAt: _date(json['followUpAvailableAt']),
+      followUpCompletedAt: _date(json['followUpCompletedAt']),
+      masteryEvidence: (json['masteryEvidence'] as List? ?? const <dynamic>[])
+          .map((value) => value.toString().trim())
+          .where((value) => value.isNotEmpty)
+          .toList(growable: false),
+      updatedAt: _date(json['updatedAt']),
     );
+  }
+
+  static DateTime? _date(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
   }
 
   static String? _cleanNullable(dynamic value) {

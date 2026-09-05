@@ -15,8 +15,8 @@ def run(cmd):
         fail(f'command failed ({result.returncode}): {cmd}')
 
 pubspec = (root/'pubspec.yaml').read_text(encoding='utf-8')
-if 'version: 0.6.7+11' not in pubspec:
-    fail('pubspec must be Android readiness version 0.6.7+11')
+if 'version: 0.6.8+12' not in pubspec:
+    fail('pubspec must be Android readiness version 0.6.8+12')
 
 checklist = root/'ANDROID_RELEASE_CHECKLIST.md'
 if not checklist.exists(): fail('ANDROID_RELEASE_CHECKLIST.md missing')
@@ -30,9 +30,9 @@ for marker in [
 
 readme=(root/'README.md').read_text(encoding='utf-8')
 build=(root/'BUILD_STATUS.md').read_text(encoding='utf-8')
-for marker in ['Android Release Readiness', '0.6.7+11', 'GitHub Actions', 'Flutter 3.47.1', 'Android Doctor', 'APK', 'AAB']:
+for marker in ['Android Release Readiness', '0.6.8+12', 'GitHub Actions', 'Flutter 3.47.1', 'Android Doctor', 'APK', 'AAB']:
     if marker not in readme: fail(f'README missing {marker}')
-for marker in ['Malaak Flutter Android V6.1 Source', '0.6.7+11', 'Android Release Readiness', 'Flutter 3.47.1', 'Android Doctor', '68/68']:
+for marker in ['Malaak Flutter Android V6.1 Source', '0.6.8+12', 'Android Release Readiness', 'Flutter 3.47.1', 'Android Doctor', '68/68']:
     if marker not in build: fail(f'BUILD_STATUS missing {marker}')
 
 for path in [
@@ -51,6 +51,7 @@ run(['python3', 'scripts/verify_android_ui_regressions.py'])
 run(['python3', 'scripts/verify_v5_release.py'])
 run(['python3', 'scripts/verify_feminine_intelligence_v6.py'])
 run(['python3', 'scripts/verify_feminine_intelligence_v7.py'])
+run(['python3', 'scripts/verify_feminine_intelligence_v8.py'])
 
 lib_text='\n'.join(p.read_text(encoding='utf-8', errors='ignore') for p in (root/'lib').rglob('*.dart'))
 for forbidden in ['SUPABASE_SERVICE_ROLE_KEY', 'OPENAI_API_KEY', 'sk-']:
