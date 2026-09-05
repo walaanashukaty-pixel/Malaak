@@ -1,0 +1,14 @@
+Malaak V6.8.2 Build Fix
+=======================
+
+Root cause confirmed from GitHub Actions run 33975568572:
+Flutter analyze reported two compile-blocking errors in lib/screens/journey/journey_screen.dart.
+Both were calls to FeminineIntelligenceScreen without its required `domain` argument.
+
+Fixed:
+- Active journey navigation now passes the feminine-intelligence JourneyDomain.
+- Domain list navigation now passes its current domain.
+- Version bumped to 0.6.8+14.
+- Upload script verifies the broken no-argument constructor calls are absent before push.
+
+The 74 remaining analyzer messages in that failed run were info-level lints/deprecations, not the build-stopping cause.

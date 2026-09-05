@@ -22,6 +22,7 @@ class JourneyScreen extends StatelessWidget {
     final learning = app.state.learningJourneys[FiCatalog.domainId] ??
         const LearningJourneyState(domainId: FiCatalog.domainId);
     final route = learning.routeId == null ? null : FiCatalog.routeById(learning.routeId!);
+    final feminineDomain = AppCatalog.journeys.firstWhere((domain) => domain.id == FiCatalog.domainId);
 
     return SafeArea(
       bottom: false,
@@ -39,7 +40,7 @@ class JourneyScreen extends StatelessWidget {
             subtitle: 'مسار واحد أساسي هلق. باقي الخريطة بتضل ظاهرة، بس مو كلها مفتوحة بنفس الوقت.',
           ),
           const SizedBox(height: 12),
-          _ActiveJourneyCard(learning: learning),
+          _ActiveJourneyCard(learning: learning, domain: feminineDomain),
           const SizedBox(height: 26),
           const SectionHeader(
             title: 'خريطة ملاك',
@@ -112,9 +113,10 @@ class _SafetyPauseCard extends StatelessWidget {
 }
 
 class _ActiveJourneyCard extends StatelessWidget {
-  const _ActiveJourneyCard({required this.learning});
+  const _ActiveJourneyCard({required this.learning, required this.domain});
 
   final LearningJourneyState learning;
+  final JourneyDomain domain;
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +129,7 @@ class _ActiveJourneyCard extends StatelessWidget {
             : 'هذا هو المسار المفتوح هلق. المراحل داخله بتنفتح بالإنجاز الحقيقي.';
     return PremiumCard(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const FeminineIntelligenceScreen()),
+        MaterialPageRoute(builder: (_) => FeminineIntelligenceScreen(domain: domain)),
       ),
       borderColor: AppColors.lilac,
       padding: const EdgeInsets.all(19),
@@ -211,7 +213,7 @@ class _DomainRow extends StatelessWidget {
     final statusColor = active ? AppColors.success : available ? AppColors.lilac : AppColors.mutedText;
     return PremiumCard(
       onTap: available
-          ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeminineIntelligenceScreen()))
+          ? () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FeminineIntelligenceScreen(domain: domain)))
           : () => _showLocked(context),
       color: available ? Colors.white : AppColors.muted.withOpacity(0.42),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
